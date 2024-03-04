@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-
+import { useDispatch } from "react-redux";
+import {createTicket} from '../app/features/DepTicketsSlices'
 function TicketForm() {
   const [querys, setQuerys] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -11,6 +12,8 @@ function TicketForm() {
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSubcategory, setSelectedSubcategory] = useState();
+
+  const dispatch = useDispatch();
 
   console.log(
     selectedDepartment,
@@ -87,7 +90,6 @@ function TicketForm() {
       }
     }
   };
-  
 
   function getTicketType(currentTime, currentDay) {
     // Adjust currentTime to Indian Standard Time (IST)
@@ -104,49 +106,57 @@ function TicketForm() {
       return "OverNight"; // Ticket created after 5 pm or before 10 am, or on weekends
     }
   }
-  const user = JSON.parse(localStorage.getItem("user"));
+  // const user = JSON.parse(localStorage.getItem("user"));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const currentTime = new Date();
       const currentDay = new Date();
-  
-      const ticketType = getTicketType(currentTime, currentDay);
-  
-// Find the selected department
-const selectedDepartmentObj = querys.find(
-    (dep) => dep.DepartmentName === selectedDepartment
-  );
-  
-  // Find the selected category
-  const selectedCategoryObj =
-    selectedDepartmentObj &&
-    selectedDepartmentObj.
-    QueryCategories.find(
-      (cat) => cat.QueryCategoryID === selectedCategory
-    );
-  
-  // Find the selected subcategory
-  const selectedSubcategoryObj =
-    selectedCategoryObj &&
-    selectedCategoryObj.QuerySubcategories.find(
-      (subcat) => subcat.QueryCategoryID === selectedSubcategory
-    );
-  
-  // Extract department and sub-department IDs
-  const assignedToDepartmentID = selectedCategoryObj
-    ? selectedCategoryObj.DepartmentId
-    : null;
-  const assignedToSubDepartmentID = selectedCategoryObj
-    ? selectedCategoryObj.SubDepartmentID // This line had a typo, it should be SubDepartmentID instead of SubDepartmentID
-    : null;
-  
-  
 
-        console.log(selectedDepartmentObj, selectedCategoryObj, selectedSubcategoryObj, assignedToDepartmentID,assignedToSubDepartmentID, 145 )
+      const ticketType = getTicketType(currentTime, currentDay);
+
+      // Find the selected department
+      const selectedDepartmentObj = querys.find(
+        (dep) => dep.DepartmentName === selectedDepartment
+      );
+
+      // Find the selected category
+      const selectedCategoryObj =
+        selectedDepartmentObj &&
+        selectedDepartmentObj.QueryCategories.find(
+          (cat) => cat.QueryCategoryID === selectedCategory
+        );
+
+      // Find the selected subcategory
+      const selectedSubcategoryObj =
+        selectedCategoryObj &&
+        selectedCategoryObj.QuerySubcategories.find(
+          (subcat) => subcat.QueryCategoryID === selectedSubcategory
+        );
+
+      // Extract department and sub-department IDs
+      const assignedToDepartmentID = selectedCategoryObj
+        ? selectedCategoryObj.DepartmentId
+        : null;
+      const assignedToSubDepartmentID = selectedCategoryObj
+        ? selectedCategoryObj.SubDepartmentID // This line had a typo, it should be SubDepartmentID instead of SubDepartmentID
+        : null;
+
+      console.log(
+        selectedDepartmentObj,
+        selectedCategoryObj,
+        selectedSubcategoryObj,
+        assignedToDepartmentID,
+        assignedToSubDepartmentID,
+        145
+      );
       // Check if assignedToDepartmentID and assignedToSubDepartmentID are valid
-      if (assignedToDepartmentID !== null && assignedToSubDepartmentID !== null) {
+      if (
+        assignedToDepartmentID !== null &&
+        assignedToSubDepartmentID !== null
+      ) {
+     
         const formData = {
           Description: description,
           AssignedToDepartmentID: assignedToDepartmentID,
@@ -157,15 +167,15 @@ const selectedDepartmentObj = querys.find(
           Status: "Pending",
           EmployeeID: JSON.parse(localStorage.getItem("user")).EmployeeID,
         };
-  
+        dispatch(createTicket(formData))
         // Make a POST request to your backend API to create the ticket
-        const response = await axios.post(
-          "http://localhost:2000/Ticket/create-ticket",
-          formData
-        );
-  
+        // const response = await axios.post(
+        //   "http://localhost:2000/Ticket/create-ticket",
+        //   formData
+        // );
+
         // Handle success response
-        console.log("Ticket created successfully:", response.data);
+        // console.log("Ticket created successfully:", response.data);
       } else {
         console.error("Error: Department or sub-department not selected");
       }
@@ -174,7 +184,6 @@ const selectedDepartmentObj = querys.find(
       console.error("Error creating ticket:", error);
     }
   };
-  
 
   return (
     <>
