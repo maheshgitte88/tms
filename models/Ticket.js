@@ -6,8 +6,8 @@ const SubDepartment = require('./SubDepartment');
 const Employee = require('./Employee');
 const TicketUpdate = require('./TicketUpdate');
 const TicketResolution = require('./TicketResolution');
-const QueryCategory = require('./QueryCategory');
-const QuerySubcategory = require('./QuerySubcategory');
+// const QueryCategory = require('./QueryCategory');
+// const QuerySubcategory = require('./QuerySubcategory');
 
 const Ticket = sequelize.define('Ticket', {
   TicketID: {
@@ -27,6 +27,18 @@ const Ticket = sequelize.define('Ticket', {
     type: DataTypes.TEXT,
     allowNull: true,
 
+  },
+  Querycategory:{
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  QuerySubcategory:{
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  TicketResTimeInMinutes:{
+    type: DataTypes.INTEGER,
+    allowNull: false,
   },
   LeadId: {
     type: DataTypes.TEXT,
@@ -74,12 +86,14 @@ Ticket.belongsTo(Student, { foreignKey: 'StudentId' });
 Ticket.belongsTo(Employee, { foreignKey: 'EmployeeID' });
 Ticket.belongsTo(Department, { foreignKey: 'AssignedToDepartmentID' });
 Ticket.belongsTo(SubDepartment, { foreignKey: 'AssignedToSubDepartmentID' });
-Ticket.belongsTo(QueryCategory, { foreignKey: 'QuerycategoryID' });
-Ticket.belongsTo(QuerySubcategory, { foreignKey: 'QuerySubcategoryID' });
+// Ticket.belongsTo(QueryCategory, { foreignKey: 'QuerycategoryID' });
+// Ticket.belongsTo(QuerySubcategory, { foreignKey: 'QuerySubcategoryID' });
 Ticket.belongsTo(Department, { foreignKey: 'TransferredToDepartmentID', as: 'TransferredToDepartment' });
 Ticket.belongsTo(SubDepartment, { foreignKey: 'TransferredToSubDepartmentID', as: 'TransferredToSubDepartment' });
 // Ticket.belongsTo(Employee, { foreignKey: 'ClaimEmployeeID'});
 // Ticket.belongsTo(Employee, { foreignKey: 'TransferredClaimEmployeeID', as: 'TransferredClaimToEmployee' });
+
+
 Ticket.hasMany(TicketUpdate, { foreignKey: 'TicketId' });
 Ticket.hasOne(TicketResolution, { foreignKey: 'TicketId' });
 

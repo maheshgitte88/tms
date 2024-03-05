@@ -7,7 +7,8 @@ const sequelize = require('./config');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 // const sharp = require('sharp');
-const cloudinary = require('cloudinary').v2;
+// const cloudinary = require('cloudinary').v2;
+const cloudinary = require('./cloudinaryConfig');
 const Department = require('./models/Department')
 const SubDepartment = require('./models/SubDepartment')
 const Employee = require('./models/Employee')
@@ -33,11 +34,11 @@ const port = 2000;
 // const storage = multer.memoryStorage();
 // const upload = multer({ storage: storage });
 
-cloudinary.config({
-    cloud_name: 'dtgpxvmpl',
-    api_key: '113933747541586',
-    api_secret: 'ubPVZqWAV1oOkGdwfuchq-l01i8',
-});
+// cloudinary.config({
+//     cloud_name: 'dtgpxvmpl',
+//     api_key: '113933747541586',
+//     api_secret: 'ubPVZqWAV1oOkGdwfuchq-l01i8',
+// });
 
 
 const io = new Server(server, {
@@ -80,13 +81,13 @@ io.on("connection", (socket) => {
 
 // io.on("connection", (socket) => {
 //     console.log(`User Connected: ${socket.id}`);
-    
+
 //     socket.on("ticketUpdate", (data) => {
 //         console.log(data, data.TicketIDasRoomId);
 //         // Emit to the room identified by TicketIDasRoomId
 //         io.to(data.TicketIDasRoomId).emit("updatedTicketChat", data);
 //     });
-    
+
 //     socket.on("disconnect", () => {
 //         console.log("User Disconnected", socket.id);
 //     });
@@ -366,6 +367,7 @@ app.get('/Tickets/:EmployeeID', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
 app.get('/get', async (req, res) => {
     try {
         await sequelize.authenticate();
@@ -633,6 +635,28 @@ app.post('/tickets', async (req, res) => {
 //     }
 // });
 
+app.post('/api/img-save', async (req, res) => {
+    console.log(req.body, 230);
+    try {
+        let updatedAttachmentUrls = [];
+        if (req.files && req.files.length > 0) {
+            // Upload each file to Cloudinary
+            for (const file of req.files) {
+                const result = await cloudinary.uploader.upload(file.path, {
+                    folder: 'ticket-updates', // Set the Cloudinary folder name
+                });
+                console.log(result, 246);
+                updatedAttachmentUrls.push(result.secure_url);
+            }
+        }
+        console.log(updatedAttachmentUrls, 283)
+        res.json({ success: true, message: 'TicketUpdate created successfully', data: updatedAttachmentUrls });
+    } catch (error) {
+
+    }
+
+})
+
 app.post('/api/ticket-updates', async (req, res) => {
     const { TicketID, UpdateDescription, Feedback, UpdateStatus, EmployeeID, StudentID, DepartmentID, SubDepartmentID } = req.body;
     console.log(req.body, 230);
@@ -678,6 +702,7 @@ app.post('/api/ticket-updates', async (req, res) => {
         res.status(500).json({ success: false, message: 'Error creating TicketUpdate', error: error.message });
     }
 });
+
 
 
 

@@ -177,60 +177,7 @@ function Ticket() {
           </div>
           <TicketForm />
 
-          <form
-            onSubmit={handleSubmit}
-            className="max-w-lg mx-auto p-1 bg-white rounded-lg shadow-md"
-          >
-            <div className="mb-4">
-              <textarea
-                id="description"
-                name="Description"
-                value={formData.Description}
-                onChange={handleChange}
-                rows={3}
-                className="mt-1 p-1 w-full border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-                placeholder="Enter a brief description"
-                required
-              />
-            </div>
-
-            <div className="mb-4">
-              <input
-                id="leadId"
-                name="LeadId"
-                value={formData.LeadId}
-                onChange={handleChange}
-                type="text"
-                className="mt-1 p-1 w-full border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-                placeholder="Enter Lead ID"
-                required
-              />
-            </div>
-
-            <div className="mb-4">
-              <input
-                type="file"
-                id="files"
-                name="files"
-                onChange={handleFileChange}
-                className="mt-1 p-1 w-full border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-                accept=".jpg, .jpeg, .png, .gif, .pdf"
-                multiple
-                required
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Accepted file types: .jpg, .jpeg, .png, .gif, .pdf
-              </p>
-            </div>
-
-            {/* Add more input fields for other ticket data */}
-            <button
-              type="submit"
-              className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-300"
-            >
-              Submit
-            </button>
-          </form>
+       
 
           <div className="table-container">
             <table
