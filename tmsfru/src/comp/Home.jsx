@@ -6,10 +6,14 @@ import axios from "axios";
 import io from "socket.io-client";
 
 import Reply from "./Reply";
+import { useDispatch, useSelector } from "react-redux";
+import { getDepTicket } from "../app/features/DepTicketsSlices";
 function Home() {
   // const socket = io.connect("http://localhost:2000");
 
   const socket = useMemo(() => io("http://localhost:2000"), []);
+
+  const { DTickets, loading } = useSelector((state) => state.app);
 
   const [data, setData] = useState([]);
 
@@ -27,6 +31,10 @@ function Home() {
 
   const [ticketupdateData, setTicketUpdateData] = useState([]);
   const [chat, setChat] = useState([]);
+
+  const dispatch = useDispatch();
+
+  console.log(DTickets, 3434);
 
   useEffect(() => {
     socket.on("updatedTicketChat", (data) => {
@@ -62,7 +70,6 @@ function Home() {
   const handleCloseModal = () => {
     setModalOpen(false);
   };
-
   const user = JSON.parse(localStorage.getItem("user"));
 
   function fetchTicketData() {
@@ -81,7 +88,7 @@ function Home() {
     }
   }
   useEffect(() => {
-    const counts = data.reduce(
+    const counts = DTickets.reduce(
       (acc, ticket) => {
         if (ticket.Status === "Closed") {
           acc.closedCount++;
@@ -97,10 +104,13 @@ function Home() {
     setClosedCount(counts.closedCount);
     setOpenCount(counts.openCount);
     setResolvedCount(counts.resolvedCount);
-  }, [data]);
+  }, [DTickets]);
 
   useEffect(() => {
     fetchTicketData();
+    const dpId = user.DepartmentID;
+    const SubDapId = user.SubDepartmentID;
+    dispatch(getDepTicket({ dpId, SubDapId }));
   }, []);
 
   const handleTicketClick = (ticket) => {
@@ -148,7 +158,7 @@ function Home() {
             </div>
           </div>
         )}
-        
+
         <div className="table-container">
           <table
             className={`custom-table ${selectedTicket ? "selected-table" : ""}`}
@@ -164,12 +174,12 @@ function Home() {
                 <th>From</th>
                 <th>Depat</th>
                 <th>RStatus</th>
-                <th> RTimestamp</th>
+                <th>RTimestamp</th>
               </tr>
             </thead>
 
             <tbody>
-              {data.map((ticket) => (
+              {DTickets.map((ticket) => (
                 <tr
                   key={ticket.TicketID}
                   onClick={() => handleTicketClick(ticket)}

@@ -1,7 +1,8 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
-import { createTicket } from "../app/features/DepTicketsSlices";
+import { useDispatch, useSelector } from "react-redux";
+import { createTicket } from "../app/features/EmpTicketsSlices";
+import { QueryCatSubHierarchyData } from "../app/features/QueryDataSlices";
 
 const currentTime = new Date();
 const currentDay = new Date();
@@ -22,10 +23,11 @@ function TicketForm() {
   const [ticketAsgSubDepId, setTicketAssigSubDpId] = useState(null);
 
   const [formData, setFormData] = useState({
-    TicketType: getTicketType(currentTime, currentDay), // Default value from local storage
+    TicketType: getTicketType(currentTime, currentDay),
     Status: "Pending", // Initial status
     Description: "",
     LeadId: "",
+    TicketResTimeInMinutes: 15,
     AssignedToDepartmentID: 1,
     AssignedToSubDepartmentID: 4,
     files: null, // Change to null for initial state
@@ -33,6 +35,23 @@ function TicketForm() {
   });
 
   const dispatch = useDispatch();
+
+  const { QueryCatSubHierarchy, loading } = useSelector((state) => state.QueryCatSubHierarchy);
+
+
+  // const filteredData = QueryCatSubHierarchy.filter((e) => e.DepartmentName === "IT");
+  const filteredData = QueryCatSubHierarchy
+  .filter(department => department.DepartmentName === "IT")
+  .map(department => {
+    return {
+      ...department,
+      QueryCategories: department.QueryCategories.filter(category =>
+        category.QueryCategoryName === "Lead Transfer" || category.QueryCategoryName === "Extraa Edge"
+      )
+    };
+  });
+
+console.log(filteredData, 43);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -45,32 +64,33 @@ function TicketForm() {
     });
     setAttchedfiles(e.target.files);
   };
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
 
-  //   const formDataObj = new FormData();
-  //   for (const key in formData) {
-  //     formDataObj.append(key, formData[key]);
-  //   }
-  //   for (const file of formData.files) {
-  //     formDataObj.append("files", file);
-  //   }
+  const handleLeadSubmit = async (e) => {
+    e.preventDefault();
 
-  //   try {
-  //     const response = await axios.post(
-  //       "http://localhost:2000/Ticket/Create",
-  //       formDataObj,
-  //       {
-  //         headers: {
-  //           "Content-Type": "multipart/form-data", // Ensure correct content type for file uploads
-  //         },
-  //       }
-  //     );
-  //     console.log(response.data); // Handle success response
-  //   } catch (error) {
-  //     console.error(error); // Handle error response
-  //   }
-  // };
+    const formDataObj = new FormData();
+    for (const key in formData) {
+      formDataObj.append(key, formData[key]);
+    }
+    for (const file of formData.files) {
+      formDataObj.append("files", file);
+    }
+
+    try {
+      const response = await axios.post(
+        "http://localhost:2000/Ticket/Create",
+        formDataObj,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const FetchQueryData = async () => {
     try {
@@ -90,6 +110,7 @@ function TicketForm() {
 
   useEffect(() => {
     FetchQueryData();
+    dispatch(QueryCatSubHierarchyData())
   }, []);
 
   const populateDepartments = (queryData) => {
@@ -192,24 +213,23 @@ function TicketForm() {
   //   }
   // };
 
-
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     try {
       const currentTime = new Date();
       const currentDay = new Date();
 
       const ticketType = getTicketType(currentTime, currentDay);
-      
+
       let updatedAttachmentUrls = [];
       if (attchedfiles && attchedfiles.length > 0) {
         for (const file of attchedfiles) {
           const formData = new FormData();
           formData.append("files", file);
-  
-          const response = await axios.post("http://localhost:2000/api/img-save",
+
+          const response = await axios.post(
+            "http://localhost:2000/api/img-save",
             formData,
             {
               headers: {
@@ -217,12 +237,11 @@ function TicketForm() {
               },
             }
           );
-          console.log(response,2332)
+          console.log(response, 2332);
           updatedAttachmentUrls.push(response.data.data);
         }
       }
-  
-  
+
       // Create form data to be sent to the server
       const formDataToSend = {
         Description: description,
@@ -236,19 +255,13 @@ function TicketForm() {
         files: updatedAttachmentUrls, // Send file URLs instead of actual files
         EmployeeID: JSON.parse(localStorage.getItem("user")).EmployeeID,
       };
-  
+
       // Dispatch createTicket action with form data
       dispatch(createTicket(formDataToSend));
     } catch (error) {
       console.error("Error creating ticket:", error);
     }
   };
-
-
-
-
-
-
 
   return (
     <>
@@ -348,7 +361,6 @@ function TicketForm() {
                   className="mt-1 p-1 w-full border rounded-md focus:outline-none focus:ring focus:border-blue-300"
                   accept=".jpg, .jpeg, .png, .gif, .pdf"
                   multiple
-                  required
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Accepted file types: .jpg, .jpeg, .png, .gif, .pdf
@@ -373,7 +385,7 @@ function TicketForm() {
 
         {showSeslsForm && (
           <form
-            onSubmit={handleSubmit}
+            onSubmit={handleLeadSubmit}
             className="max-w-lg mx-auto p-1 bg-white rounded-lg shadow-md"
           >
             <div className="mb-4">
@@ -398,7 +410,6 @@ function TicketForm() {
                 type="text"
                 className="mt-1 p-1 w-full border rounded-md focus:outline-none focus:ring focus:border-blue-300"
                 placeholder="Enter Lead ID"
-                required
               />
             </div>
 
@@ -411,7 +422,6 @@ function TicketForm() {
                 className="mt-1 p-1 w-full border rounded-md focus:outline-none focus:ring focus:border-blue-300"
                 accept=".jpg, .jpeg, .png, .gif, .pdf"
                 multiple
-                required
               />
               <p className="text-xs text-gray-500 mt-1">
                 Accepted file types: .jpg, .jpeg, .png, .gif, .pdf

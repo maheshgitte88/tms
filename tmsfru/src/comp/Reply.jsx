@@ -86,8 +86,7 @@ const Reply = ({ ticketData }) => {
           UpdateDescription: "",
           DepartmentID: JSON.parse(localStorage.getItem("user")).DepartmentID,
           EmployeeID: JSON.parse(localStorage.getItem("user")).EmployeeID,
-          SubDepartmentID: JSON.parse(localStorage.getItem("user"))
-            .SubDepartmentID,
+          SubDepartmentID: JSON.parse(localStorage.getItem("user")).SubDepartmentID,
           Feedback: "",
           UpdateStatus: "",
           files: null,

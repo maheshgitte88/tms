@@ -15,12 +15,13 @@ export const createTicket = createAsyncThunk(
     }
 );
 
-export const getDepTicket = createAsyncThunk(
-    "getdepTickets",
-    async ({ dpId, SubDapId }, { rejectWithValue }) => {
+export const getEmployeeTicket = createAsyncThunk(
+    "getEmployeeTicket",
+    async (EmpId, { rejectWithValue }) => {
         try {
-            const res = await axios.get(`http://localhost:2000/department/${dpId}/${SubDapId}`);
+            const res = await axios.get(`http://localhost:2000/Tickets/${EmpId}`);
             const resData = res.data.tickets;
+            console.log(resData ,242424)
             return resData;
         } catch (error) {
             return rejectWithValue(error);
@@ -31,10 +32,10 @@ export const getDepTicket = createAsyncThunk(
 
 
 
-export const DepTickets = createSlice({
-    name: "DepTicketDetails",
+export const EmpTickets = createSlice({
+    name: "EmpTicketDetails",
     initialState: {
-        DTickets: [],
+        ETickets: [],
         loading: false,
         error: null,
     },
@@ -46,24 +47,24 @@ export const DepTickets = createSlice({
             })
             .addCase(createTicket.fulfilled, (state, action) => {
                 state.loading = false;
-                state.DTickets.push(action.payload);
+                state.ETickets.push(action.payload);
             })
             .addCase(createTicket.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload.message || "An error occurred"; // Handle potential missing error message
             })
-            .addCase(getDepTicket.pending, (state) => {
+            .addCase(getEmployeeTicket.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(getDepTicket.fulfilled, (state, action) => {
+            .addCase(getEmployeeTicket.fulfilled, (state, action) => {
                 state.loading = false;
-                state.DTickets = action.payload;
+                state.ETickets = action.payload;
             })
-            .addCase(getDepTicket.rejected, (state, action) => {
+            .addCase(getEmployeeTicket.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload.message || "An error occurred"; // Handle potential missing error message
             });
     },
 });
 
-export default DepTickets.reducer;
+export default EmpTickets.reducer;

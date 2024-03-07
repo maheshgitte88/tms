@@ -4,16 +4,18 @@ import { Link } from "react-router-dom";
 import Reply from "./Reply";
 import io from "socket.io-client";
 import TicketForm from "./TicketForm";
+import { useDispatch, useSelector } from "react-redux";
+import { getEmployeeTicket } from "../app/features/EmpTicketsSlices";
 function Ticket() {
-
-  const socket = useMemo(() =>io("http://localhost:2000"),[]);
-
-  const [ownTicketData, setOwnTicketData] = useState([]);
+  const socket = useMemo(() => io("http://localhost:2000"), []);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const ticketUpdatesContainerRef = useRef(null);
   const [ticketupdateData, setTicketUpdateData] = useState([]);
   const [chat, setChat] = useState([]);
+  const dispatch = useDispatch();
+  const { ETickets, loading } = useSelector((state) => state.empTickets);
 
+  console.log(ETickets, 2020);
   const [formData, setFormData] = useState({
     TicketType: "Normal Ticket", // Default value from local storage
     Status: "Open", // Initial status
@@ -26,7 +28,7 @@ function Ticket() {
     files: null, // Change to null for initial state
     EmployeeID: JSON.parse(localStorage.getItem("user")).EmployeeID, // EmployeeID from user object in local storage
   });
- 
+
   useEffect(() => {
     socket.on("updatedTicketChat", (data) => {
       const datares = data.TicketUpdates;
@@ -34,33 +36,33 @@ function Ticket() {
       setChat((prevChat) => [...prevChat, datares]);
     });
     // Assuming you have the ticketId available
-    if(selectedTicket){
+    if (selectedTicket) {
       socket.emit("joinTicketRoom", selectedTicket.TicketID);
-      console.log(selectedTicket.TicketID, 38)
+      console.log(selectedTicket.TicketID, 38);
     }
 
     return () => {
       socket.off("updatedTicketChat");
-  };
+    };
   }, [socket, selectedTicket]);
 
   const user = JSON.parse(localStorage.getItem("user"));
 
   function fetchOwnTicketData() {
     if (user) {
-      const dpId = user.DepartmentID;
-      const SubDapId = user.SubDepartmentID;
       const EmpId = user.EmployeeID;
-      console.log(dpId, SubDapId, EmpId, 25);
-      axios
-        .get(`http://localhost:2000/Tickets/${EmpId}`)
-        .then((response) => {
-          setOwnTicketData(response.data.tickets);
-          console.log(response.data, 30);
-        })
-        .catch((error) => {
-          console.error("Error fetching data:", error);
-        });
+      console.log(EmpId);
+      dispatch(getEmployeeTicket(EmpId));
+
+      // axios
+      //   .get(`http://localhost:2000/Tickets/${EmpId}`)
+      //   .then((response) => {
+      //     setOwnTicketData(response.data.tickets);
+      //     console.log(response.data, 30);
+      //   })
+      //   .catch((error) => {
+      //     console.error("Error fetching data:", error);
+      //   });
     }
   }
 
@@ -177,8 +179,6 @@ function Ticket() {
           </div>
           <TicketForm />
 
-       
-
           <div className="table-container">
             <table
               className={`custom-table ${
@@ -192,15 +192,15 @@ function Ticket() {
                   <th>Lead-Id</th>
                   <th>Status</th>
                   <th>Description</th>
-                  <th>Location</th>
+                  {/* <th>Location</th>
                   <th>From</th>
-                  <th>Depat</th>
+                  <th>Depat</th> */}
                   <th>RStatus</th>
                   <th> RTimestamp</th>
                 </tr>
               </thead>
               <tbody>
-                {ownTicketData.map((ticket) => (
+                {ETickets.map((ticket) => (
                   <tr
                     key={ticket.TicketID}
                     onClick={() => handleTicketClick(ticket)}
@@ -213,9 +213,9 @@ function Ticket() {
                     <td>{ticket.LeadId ? <>{ticket.LeadId}</> : <>NA</>}</td>
                     <td className="text-red-600">{ticket.Status}</td>
                     <td>{ticket.Description}</td>
-                    <td>{ticket.Employee.Location}</td>
-                    <td>{ticket.Employee.EmployeeName}</td>
-                    <td>{ticket.Employee.Department.DepartmentName}</td>
+                    {/* <td>{ticket.Employee.Location ? <>{ticket.Employee.Location}</> :<>NA</>}</td> */}
+                    {/* <td>{ticket.Employee.EmployeeName}</td>
+                    <td>{ticket.Employee.Department.DepartmentName}</td> */}
                     <td>
                       {ticket.TicketResolution
                         ? ticket.TicketResolution.ResolutionStatus
