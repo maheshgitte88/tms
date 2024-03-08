@@ -7,15 +7,21 @@ import io from "socket.io-client";
 
 import Reply from "./Reply";
 import { useDispatch, useSelector } from "react-redux";
-import { getDepTicket } from "../app/features/DepTicketsSlices";
+// import { updateDeptTicket } from path_to_DepTickets_reducer;
+
+import {
+  getDepTicket,
+  updateDeptTicket,
+  updateTicket,
+} from "../app/features/DepTicketsSlices";
 function Home() {
   // const socket = io.connect("http://localhost:2000");
+  const user = JSON.parse(localStorage.getItem("user"));
 
   const socket = useMemo(() => io("http://localhost:2000"), []);
 
   const { DTickets, loading } = useSelector((state) => state.app);
-
-  const [data, setData] = useState([]);
+  console.log(DTickets, 23);
 
   const [closedCount, setClosedCount] = useState(0);
   const [openCount, setOpenCount] = useState(0);
@@ -33,8 +39,6 @@ function Home() {
   const [chat, setChat] = useState([]);
 
   const dispatch = useDispatch();
-
-  console.log(DTickets, 3434);
 
   useEffect(() => {
     socket.on("updatedTicketChat", (data) => {
@@ -54,6 +58,28 @@ function Home() {
     };
   }, [socket, selectedTicket]);
 
+  const AssignedToSubDepartmentID = user.SubDepartmentID;
+  console.log(AssignedToSubDepartmentID, 444444);
+  useEffect(() => {
+    socket.on("updatedDeptTicketChat", (data) => {
+      console.log(data, 616263);
+      // const DTickets = DTickets.push(data.createTicket);
+      dispatch(updateDeptTicket(data));
+      // console.log(datares, 23);
+      // setChat((prevChat) => [...DTickets, datares]);
+    });
+
+    // Assuming you have the ticketId available
+    if (AssignedToSubDepartmentID) {
+      socket.emit("joinDepaTicketRoom", AssignedToSubDepartmentID);
+      console.log(AssignedToSubDepartmentID, 38);
+    }
+
+    // return () => {
+    //   socket.off("updatedDeptTicketChat");
+    // };
+  }, [socket]);
+
   console.log("chat ts", chat, 26);
 
   useEffect(() => {
@@ -70,23 +96,23 @@ function Home() {
   const handleCloseModal = () => {
     setModalOpen(false);
   };
-  const user = JSON.parse(localStorage.getItem("user"));
+  // const user = JSON.parse(localStorage.getItem("user"));
 
-  function fetchTicketData() {
-    if (user) {
-      const dpId = user.DepartmentID;
-      const SubDapId = user.SubDepartmentID;
-      axios
-        .get(`http://localhost:2000/department/${dpId}/${SubDapId}`)
-        .then((response) => {
-          setData(response.data.tickets);
-          console.log(response.data, 16);
-        })
-        .catch((error) => {
-          console.error("Error fetching data:", error);
-        });
-    }
-  }
+  // function fetchTicketData() {
+  //   if (user) {
+  //     const dpId = user.DepartmentID;
+  //     const SubDapId = user.SubDepartmentID;
+  //     axios
+  //       .get(`http://localhost:2000/department/${dpId}/${SubDapId}`)
+  //       .then((response) => {
+  //         setData(response.data.tickets);
+  //         console.log(response.data, 16);
+  //       })
+  //       .catch((error) => {
+  //         console.error("Error fetching data:", error);
+  //       });
+  //   }
+  // }
   useEffect(() => {
     const counts = DTickets.reduce(
       (acc, ticket) => {
@@ -107,7 +133,7 @@ function Home() {
   }, [DTickets]);
 
   useEffect(() => {
-    fetchTicketData();
+    // fetchTicketData();
     const dpId = user.DepartmentID;
     const SubDapId = user.SubDepartmentID;
     dispatch(getDepTicket({ dpId, SubDapId }));
@@ -121,6 +147,74 @@ function Home() {
   useEffect(() => {
     setChat(ticketupdateData);
   }, [selectedTicket]);
+
+  // Function to calculate the remaining time and extra time
+  function calculateTime(createdAt, ticketResTimeInMinutes) {
+    const startTime = new Date(createdAt);
+    const endTime = new Date(
+      startTime.getTime() + ticketResTimeInMinutes * 60000
+    ); // Convert minutes to milliseconds
+    const currentTime = new Date();
+    const remainingTime = Math.max(0, endTime - currentTime); // Remaining time in milliseconds
+    const extraTime = Math.max(0, currentTime - endTime); // Extra time in milliseconds
+    return {
+      remaining: remainingTime,
+      extra: extraTime,
+    };
+  }
+
+   function calculateRemainingTime(createdAt, ticketResTimeInMinutes) {
+    const startTime = new Date(createdAt);
+    const endTime = new Date(startTime.getTime() + ticketResTimeInMinutes * 60000); // Convert minutes to milliseconds
+    const currentTime = new Date();
+    const remainingTime = Math.max(0, endTime - currentTime); // Remaining time in milliseconds
+    return Math.ceil(remainingTime / 60000); // Convert remaining time to minutes and round up
+  }
+ 
+
+  // Function to calculate the remaining time and extra time
+  function calculateTime(createdAt, ticketResTimeInMinutes) {
+    const startTime = new Date(createdAt);
+    const endTime = new Date(startTime.getTime() + ticketResTimeInMinutes * 60000); // Convert minutes to milliseconds
+    const currentTime = new Date();
+    const remainingTime = Math.max(0, endTime - currentTime); // Remaining time in milliseconds
+    const extraTime = Math.max(0, currentTime - endTime); // Extra time in milliseconds
+    return {
+      remaining: remainingTime,
+      extra: extraTime
+    };
+  }
+
+  const formatTime = (milliseconds) => {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  useEffect(() => {
+    // Function to calculate the remaining time in minutes
+    const calculateRemainingTime = (createdAt, ticketResTimeInMinutes) => {
+      const startTime = new Date(createdAt);
+      const endTime = new Date(startTime.getTime() + ticketResTimeInMinutes * 60000); // Convert minutes to milliseconds
+      const currentTime = new Date();
+      const remainingTime = Math.max(0, endTime - currentTime); // Remaining time in milliseconds
+      return Math.ceil(remainingTime / 60000); // Convert remaining time to minutes and round up
+    };
+
+    // Update the remaining time for each ticket in real-time
+    const timer = setInterval(() => {
+      const updatedTickets = DTickets.map(ticket => ({
+        ...ticket,
+        remainingTime: calculateRemainingTime(ticket.createdAt, ticket.TicketResTimeInMinutes)
+      }));
+      dispatch(updateTicket(updatedTickets)); // Dispatch action to update ticket data
+    }, 1000); // Update every second
+
+    return () => clearInterval(timer); // Clean up timer when component unmounts
+  }, [DTickets, dispatch]);
+
 
   return (
     <div className="container mx-auto p-1 flex flex-col sm:flex-row text-sm">
@@ -158,11 +252,8 @@ function Home() {
             </div>
           </div>
         )}
-
         <div className="table-container">
-          <table
-            className={`custom-table ${selectedTicket ? "selected-table" : ""}`}
-          >
+          <table className="custom-table">
             <thead>
               <tr>
                 <th>Id</th>
@@ -170,46 +261,52 @@ function Home() {
                 <th>Lead-Id</th>
                 <th>Status</th>
                 <th>Description</th>
-                <th>Location</th>
-                <th>From</th>
-                <th>Depat</th>
+                <th>Querycategory</th>
+                <th>QuerySubcategory</th>
                 <th>RStatus</th>
                 <th>RTimestamp</th>
+                <th>Time</th>
               </tr>
             </thead>
-
             <tbody>
-              {DTickets.map((ticket) => (
-                <tr
-                  key={ticket.TicketID}
-                  onClick={() => handleTicketClick(ticket)}
-                  className={`cursor-pointer ${
-                    selectedTicket === ticket ? "selected-row" : ""
-                  }`}
-                >
-                  <td>{ticket.TicketID}</td>
-                  <td>{ticket.TicketType}</td>
-                  <td>{ticket.LeadId ? <>{ticket.LeadId}</> : <>NA</>}</td>
-                  <td className="text-red-600">{ticket.Status}</td>
-                  <td>{ticket.Description}</td>
-                  <td>{ticket.Employee.Location}</td>
-                  <td>{ticket.Employee.EmployeeName}</td>
-                  <td>{ticket.Employee.Department.DepartmentName}</td>
-                  <td>
-                    {ticket.TicketResolution
-                      ? ticket.TicketResolution.ResolutionStatus
-                      : "-"}
-                  </td>
-                  <td>
-                    {ticket.TicketResolution
-                      ? ticket.TicketResolution.ResolutionTimestamp
-                      : "-"}
-                  </td>
-                </tr>
-              ))}
+              {DTickets.map((ticket, index) => {
+                const { remaining, extra } = calculateTime(
+                  ticket.createdAt,
+                  ticket.TicketResTimeInMinutes
+                );
+                return (
+                  <tr key={index} className="cursor-pointer">
+                    <td>{ticket.TicketID}</td>
+                    <td>{ticket.TicketType}</td>
+                    <td>{ticket.LeadId ? ticket.LeadId : "NA"}</td>
+                    <td className="text-red-600">{ticket.Status}</td>
+                    <td>{ticket.Description}</td>
+                    <td>{ticket.Querycategory}</td>
+                    <td>{ticket.QuerySubcategory}</td>
+                    <td>
+                      {ticket.TicketResolution
+                        ? ticket.TicketResolution.ResolutionStatus
+                        : "-"}
+                    </td>
+                    <td>
+                      {ticket.TicketResolution
+                        ? ticket.TicketResolution.ResolutionTimestamp
+                        : "-"}
+                    </td>
+                    <td style={{ color: remaining > 0 ? 'green' : 'red' }}>
+                  {formatTime(remaining)}
+                </td>
+                <td style={{ color: extra === "00:00:00" && remaining > 0 ? 'green' : (extra === "00:00:00" && remaining === 0) ? 'red' : extra > 0 ? 'red' : 'green' }}>
+                  {extra === "00:00:00" ? formatTime(remaining) : formatTime(extra)}
+                  
+                </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
+
         {/* <DepartmentTickets data={data} Tstatus={'Open'} /> */}
         <div className="mb-4">
           <h6 className="font-semibold mb-2">Tickets For Me</h6>

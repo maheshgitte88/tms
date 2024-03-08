@@ -1,13 +1,14 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+
 import { useDispatch, useSelector } from "react-redux";
-import { createTicket } from "../app/features/EmpTicketsSlices";
+import { createTicket, updateEmpTicket } from "../app/features/EmpTicketsSlices";
 import { QueryCatSubHierarchyData } from "../app/features/QueryDataSlices";
+import { io } from "socket.io-client";
 
 const currentTime = new Date();
 const currentDay = new Date();
 function TicketForm() {
-  const [querys, setQuerys] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [showSeslsForm, setShowSealsForm] = useState(false);
   const [attchedfiles, setAttchedfiles] = useState(null);
@@ -22,6 +23,8 @@ function TicketForm() {
   const [ticketAsgDepId, setTicketAssigDpId] = useState(null);
   const [ticketAsgSubDepId, setTicketAssigSubDpId] = useState(null);
 
+  const socket = useMemo(() => io("http://localhost:2000"), []);
+
   const [formData, setFormData] = useState({
     TicketType: getTicketType(currentTime, currentDay),
     Status: "Pending", // Initial status
@@ -30,29 +33,65 @@ function TicketForm() {
     TicketResTimeInMinutes: 15,
     AssignedToDepartmentID: 1,
     AssignedToSubDepartmentID: 4,
-    files: null, // Change to null for initial state
+    // files: null, // Change to null for initial state
     EmployeeID: JSON.parse(localStorage.getItem("user")).EmployeeID, // EmployeeID from user object in local storage
   });
 
   const dispatch = useDispatch();
 
-  const { QueryCatSubHierarchy, loading } = useSelector((state) => state.QueryCatSubHierarchy);
+  const { QueryCatSubHierarchy, loading } = useSelector(
+    (state) => state.QueryCatSubHierarchy
+  );
 
+  useEffect(() => {
+    socket.on("updatedDeptTicketChat", (data) => {
+      console.log(data, 616263);
+      dispatch(updateEmpTicket(data));
+    });
+
+    // Assuming you have the ticketId available
+    if (formData.AssignedToSubDepartmentID) {
+      socket.emit("joinDepaTicketRoom", formData.AssignedToSubDepartmentID);
+      console.log(formData.AssignedToSubDepartmentID, 38);
+    }
+    if (ticketAsgSubDepId) {
+      socket.emit("joinDepaTicketRoom", ticketAsgSubDepId);
+      console.log(ticketAsgSubDepId, 38);
+    }
+
+    // return () => {
+    //   socket.off("updatedTicketChat");
+    // };
+  }, [socket, ticketAsgSubDepId, formData.AssignedToSubDepartmentID]);
 
   // const filteredData = QueryCatSubHierarchy.filter((e) => e.DepartmentName === "IT");
-  const filteredData = QueryCatSubHierarchy
-  .filter(department => department.DepartmentName === "IT")
-  .map(department => {
+  const filteredData = QueryCatSubHierarchy.filter(
+    (department) => department.DepartmentName === "IT"
+  ).map((department) => {
     return {
       ...department,
-      QueryCategories: department.QueryCategories.filter(category =>
-        category.QueryCategoryName === "Lead Transfer" || category.QueryCategoryName === "Extraa Edge"
-      )
+      QueryCategories: department.QueryCategories.filter(
+        (category) =>
+          category.QueryCategoryName === "Lead Transfer" ||
+          category.QueryCategoryName === "Extraa Edge"
+      ),
     };
   });
 
-console.log(filteredData, 43);
+  console.log(filteredData, 43);
+  const handleCategorySelect = (categoryName) => {
+    setFormData({
+      ...formData,
+      Querycategory: categoryName,
+    });
+  };
 
+  const handleSubcategorySelect = (subcategoryName) => {
+    setFormData({
+      ...formData,
+      QuerySubcategoryName: subcategoryName,
+    });
+  };
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -60,7 +99,7 @@ console.log(filteredData, 43);
   const handleFileChange = (e) => {
     setFormData({
       ...formData,
-      files: e.target.files,
+      AttachmentUrl: e.target.files,
     });
     setAttchedfiles(e.target.files);
   };
@@ -68,54 +107,65 @@ console.log(filteredData, 43);
   const handleLeadSubmit = async (e) => {
     e.preventDefault();
 
-    const formDataObj = new FormData();
-    for (const key in formData) {
-      formDataObj.append(key, formData[key]);
-    }
-    for (const file of formData.files) {
-      formDataObj.append("files", file);
-    }
-
     try {
-      const response = await axios.post(
-        "http://localhost:2000/Ticket/Create",
-        formDataObj,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+      const updatedAttachmentUrls = await getAttachmentUrls(
+        formData.AttachmentUrl
       );
-      console.log(response.data);
+      console.log(updatedAttachmentUrls, 91);
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        AttachmentUrl: updatedAttachmentUrls,
+      }));
+
+      socket.emit("createTicket", {
+        createTicket: formData,
+        AssigSubDepId: formData.AssignedToSubDepartmentID,
+      });
+      // dispatch(createTicket(formData));
     } catch (error) {
       console.error(error);
     }
   };
 
-  const FetchQueryData = async () => {
+  // Function to get attachment URLs from the API
+  const getAttachmentUrls = async (files) => {
     try {
-      const queryRes = await axios.get(
-        `http://localhost:2000/Query/get-query-hierarchy`
-      );
-      if (queryRes.data) {
-        setQuerys(queryRes.data);
-        populateDepartments(queryRes.data); // Call populateDepartments after data is fetched
-      } else {
-        console.error("Error: Query data is missing");
+      const urls = [];
+      if(files){
+        for (const file of files) {
+          const formData = new FormData();
+          formData.append("file", file);
+          const response = await axios.post(
+            "http://localhost:2000/api/img-save",
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
+          console.log(response, 145);
+          urls.push(response.data.data);
+        }
+        return urls;
+      }else{
+        return null;
       }
+
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching attachment URLs:", error);
+      throw error;
     }
   };
 
   useEffect(() => {
-    FetchQueryData();
-    dispatch(QueryCatSubHierarchyData())
+    dispatch(QueryCatSubHierarchyData());
+    populateDepartments(QueryCatSubHierarchy);
   }, []);
 
-  const populateDepartments = (queryData) => {
-    if (queryData && queryData.length > 0) {
-      const departmentOptions = queryData.map((dep) => (
+  const populateDepartments = (QueryCatSubHierarchy) => {
+    if (QueryCatSubHierarchy && QueryCatSubHierarchy.length > 0) {
+      const departmentOptions = QueryCatSubHierarchy.map((dep) => (
         <option key={dep.DepartmentId} value={dep.DepartmentId}>
           {dep.DepartmentName}
         </option>
@@ -123,10 +173,9 @@ console.log(filteredData, 43);
       setDepartments(departmentOptions);
     }
   };
-
   const populateCategories = (selectedDepartment) => {
     setSelectedDepartment(selectedDepartment);
-    const department = querys.find(
+    const department = QueryCatSubHierarchy.find(
       (dep) => dep.DepartmentName === selectedDepartment
     );
     if (department) {
@@ -140,7 +189,7 @@ console.log(filteredData, 43);
   };
 
   const populateSubcategories = (selectedCategory) => {
-    const department = querys.find(
+    const department = QueryCatSubHierarchy.find(
       (dep) => dep.DepartmentName === selectedDepartment
     );
     if (department) {
@@ -180,38 +229,6 @@ console.log(filteredData, 43);
       return "OverNight"; // Ticket created after 5 pm or before 10 am, or on weekends
     }
   }
-  // const user = JSON.parse(localStorage.getItem("user"));
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  // const formDataObj = new FormData();
-
-  // for (const file of attchedfiles) {
-  //   formData.append("files", file);
-  // }
-  //   try {
-  //     const currentTime = new Date();
-  //     const currentDay = new Date();
-
-  //     const ticketType = getTicketType(currentTime, currentDay);
-  //     const formData = {
-  //       Description: description,
-  //       AssignedToDepartmentID: ticketAsgDepId,
-  //       AssignedToSubDepartmentID: ticketAsgSubDepId,
-  //       Querycategory: selectedCategory,
-  //       QuerySubcategory: selectedSubcategory,
-  //       TicketResTimeInMinutes: Number(queryResTime),
-  //       TicketType: ticketType,
-  //       Status: "Pending",
-  //       files:attchedfiles,
-  //       EmployeeID: JSON.parse(localStorage.getItem("user")).EmployeeID,
-  //     };
-
-  //     dispatch(createTicket(formData));
-  //   } catch (error) {
-  //     console.error("Error creating ticket:", error);
-  //   }
-  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -252,7 +269,7 @@ console.log(filteredData, 43);
         TicketResTimeInMinutes: Number(queryResTime),
         TicketType: ticketType,
         Status: "Pending",
-        files: updatedAttachmentUrls, // Send file URLs instead of actual files
+        AttachmentUrl: updatedAttachmentUrls, // Send file URLs instead of actual files
         EmployeeID: JSON.parse(localStorage.getItem("user")).EmployeeID,
       };
 
@@ -383,60 +400,118 @@ console.log(filteredData, 43);
           {showSeslsForm ? "Hide Form" : "Lead Tickets"}
         </button>
 
-        {showSeslsForm && (
-          <form
-            onSubmit={handleLeadSubmit}
-            className="max-w-lg mx-auto p-1 bg-white rounded-lg shadow-md"
-          >
-            <div className="mb-4">
-              <textarea
-                id="description"
-                name="Description"
-                value={formData.Description}
-                onChange={handleChange}
-                rows={3}
-                className="mt-1 p-1 w-full border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-                placeholder="Enter a brief description"
-                required
-              />
-            </div>
-
-            <div className="mb-4">
-              <input
-                id="leadId"
-                name="LeadId"
-                value={formData.LeadId}
-                onChange={handleChange}
-                type="text"
-                className="mt-1 p-1 w-full border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-                placeholder="Enter Lead ID"
-              />
-            </div>
-
-            <div className="mb-4">
-              <input
-                type="file"
-                id="files"
-                name="files"
-                onChange={handleFileChange}
-                className="mt-1 p-1 w-full border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-                accept=".jpg, .jpeg, .png, .gif, .pdf"
-                multiple
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Accepted file types: .jpg, .jpeg, .png, .gif, .pdf
-              </p>
-            </div>
-
-            {/* Add more input fields for other ticket data */}
-            <button
-              type="submit"
-              className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-300"
+        <>
+          {showSeslsForm && (
+            <form
+              onSubmit={handleLeadSubmit}
+              className="max-w-lg mx-auto p-1 bg-white rounded-lg shadow-md"
             >
-              Submit
-            </button>
-          </form>
-        )}
+              <div className="mb-4">
+                <div className="mt-1 p-1 w-full border rounded-md focus:outline-none focus:ring focus:border-blue-300">
+                  <ul className="flex justify-between">
+                    {filteredData.map((department) =>
+                      department.QueryCategories.map((category) => (
+                        <li
+                          key={category.QueryCategoryID}
+                          onClick={() =>
+                            handleCategorySelect(category.QueryCategoryName)
+                          }
+                          className={`px-5 cursor-pointer ${
+                            formData.Querycategory ===
+                            category.QueryCategoryName
+                              ? "bg-blue-200" // Change background color for selected category
+                              : ""
+                          }`}
+                        >
+                          {category.QueryCategoryName}
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                </div>
+              </div>
+
+              {formData.Querycategory && (
+                <div className="mb-4">
+                  <select
+                    id="querySubcategory"
+                    name="QuerySubcategory" // Adjusted to QuerySubcategory
+                    value={formData.QuerySubcategory}
+                    onChange={handleChange} // Changed to handleChange
+                    className="mt-1 p-1 w-full border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+                  >
+                    <option value="">Select Query Subcategory</option>
+                    {QueryCatSubHierarchy.map((department) =>
+                      department.QueryCategories.find(
+                        (category) =>
+                          category.QueryCategoryName === formData.Querycategory
+                      )?.QuerySubcategories.map((subcategory) => (
+                        <option
+                          key={subcategory.QuerySubCategoryID}
+                          value={subcategory.QuerySubcategoryName}
+                          onClick={() =>
+                            handleSubcategorySelect(
+                              subcategory.QuerySubcategoryName
+                            )
+                          } // Added onClick to set subcategory
+                        >
+                          {subcategory.QuerySubcategoryName}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+              )}
+              <div className="mb-4">
+                <textarea
+                  id="description"
+                  name="Description"
+                  value={formData.Description}
+                  onChange={handleChange}
+                  rows={3}
+                  className="mt-1 p-1 w-full border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+                  placeholder="Enter a brief description"
+                  required
+                />
+              </div>
+
+              <div className="mb-4">
+                <input
+                  id="leadId"
+                  name="LeadId"
+                  value={formData.LeadId}
+                  onChange={handleChange}
+                  type="text"
+                  className="mt-1 p-1 w-full border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+                  placeholder="Enter Lead ID"
+                />
+              </div>
+
+              <div className="mb-4">
+                <input
+                  type="file"
+                  id="files"
+                  name="files"
+                  onChange={handleFileChange}
+                  className="mt-1 p-1 w-full border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+                  accept=".jpg, .jpeg, .png, .gif, .pdf"
+                  multiple
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Accepted file types: .jpg, .jpeg, .png, .gif, .pdf
+                </p>
+              </div>
+
+              {/* Add more input fields for other ticket data */}
+              <button
+                type="submit"
+                className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-300"
+              >
+                Submit
+              </button>
+            </form>
+          )}
+        </>
       </div>
     </>
   );

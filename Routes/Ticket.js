@@ -4,7 +4,6 @@ const express = require('express');
 const router = express.Router();
 const cloudinary = require('cloudinary').v2;
 const Ticket = require('../models/Ticket');
-const TicketUpdate = require('../models/TicketUpdate');
 
 cloudinary.config({
   cloud_name: 'dtgpxvmpl',
@@ -68,15 +67,14 @@ router.post('/Create', async (req, res) => {
   }
 });
 
-router.post('/create-ticket', async (req, res) => {
-  try {
-    console.log(req.body, 73)
-    const ticket = await Ticket.create(req.body);
-    res.status(201).json(ticket);
-  } catch (error) {
-    console.error('Error creating ticket:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
+// router.post('/create-ticket', async (req, res) => {
+//   try {
+//     const ticket = await Ticket.create(req.body);
+//     res.status(201).json(ticket);
+//   } catch (error) {
+//     console.error('Error creating ticket:', error);
+//     res.status(500).json({ error: 'Internal Server Error' });
+//   }
+// });
 
 module.exports = router;

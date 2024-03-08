@@ -14,6 +14,8 @@ function Ticket() {
   const [chat, setChat] = useState([]);
   const dispatch = useDispatch();
   const { ETickets, loading } = useSelector((state) => state.empTickets);
+  
+  const user = JSON.parse(localStorage.getItem("user"));
 
   console.log(ETickets, 2020);
   const [formData, setFormData] = useState({
@@ -46,25 +48,6 @@ function Ticket() {
     };
   }, [socket, selectedTicket]);
 
-  const user = JSON.parse(localStorage.getItem("user"));
-
-  function fetchOwnTicketData() {
-    if (user) {
-      const EmpId = user.EmployeeID;
-      console.log(EmpId);
-      dispatch(getEmployeeTicket(EmpId));
-
-      // axios
-      //   .get(`http://localhost:2000/Tickets/${EmpId}`)
-      //   .then((response) => {
-      //     setOwnTicketData(response.data.tickets);
-      //     console.log(response.data, 30);
-      //   })
-      //   .catch((error) => {
-      //     console.error("Error fetching data:", error);
-      //   });
-    }
-  }
 
   const handleTicketClick = (ticket) => {
     setSelectedTicket(ticket);
@@ -99,19 +82,22 @@ function Ticket() {
   // }, [data]);
 
   useEffect(() => {
-    fetchOwnTicketData();
+    if (user) {
+      const EmpId = user.EmployeeID;
+      dispatch(getEmployeeTicket(EmpId));
+    }
     // FetchQueryData();
   }, []);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-  const handleFileChange = (e) => {
-    setFormData({
-      ...formData,
-      files: e.target.files,
-    });
-  };
+  // const handleChange = (e) => {
+  //   setFormData({ ...formData, [e.target.name]: e.target.value });
+  // };
+  // const handleFileChange = (e) => {
+  //   setFormData({
+  //     ...formData,
+  //     files: e.target.files,
+  //   });
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -188,10 +174,11 @@ function Ticket() {
               <thead>
                 <tr>
                   <th>Id</th>
-                  <th>T-Type</th>
-                  <th>Lead-Id</th>
                   <th>Status</th>
+                  <th>Lead-Id</th>
                   <th>Description</th>
+                  <th>Querycategory</th>
+                  <th>QuerySubcategory</th>
                   {/* <th>Location</th>
                   <th>From</th>
                   <th>Depat</th> */}
@@ -209,10 +196,11 @@ function Ticket() {
                     }`}
                   >
                     <td>{ticket.TicketID}</td>
-                    <td>{ticket.TicketType}</td>
-                    <td>{ticket.LeadId ? <>{ticket.LeadId}</> : <>NA</>}</td>
                     <td className="text-red-600">{ticket.Status}</td>
+                    <td>{ticket.LeadId ? <>{ticket.LeadId}</> : <>NA</>}</td>
                     <td>{ticket.Description}</td>
+                    <td>{ticket.Querycategory}</td>
+                    <td>{ticket.QuerySubcategory}</td>
                     {/* <td>{ticket.Employee.Location ? <>{ticket.Employee.Location}</> :<>NA</>}</td> */}
                     {/* <td>{ticket.Employee.EmployeeName}</td>
                     <td>{ticket.Employee.Department.DepartmentName}</td> */}

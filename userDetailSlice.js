@@ -164,3 +164,60 @@ export const userDetail = createSlice({
 export default userDetail.reducer;
 
 export const { searchUser } = userDetail.actions;
+
+
+
+
+
+
+
+
+
+
+io.on("connection", (socket) => {
+  console.log(`User Connected: ${socket.id}`);
+
+  // Join the appropriate room based on TicketID
+  socket.on("joinTicketRoom", (ticketId) => {
+    socket.join(ticketId);
+    console.log(`User ${socket.id} joined room ${ticketId}`);
+  });
+
+  // Handle ticket update event
+  socket.on("ticketUpdate", async (data) => {
+    console.log(data, data.TicketIDasRoomId, 57);
+
+    try {
+      const updatedTicket = await Ticket.findByIdAndUpdate(data._id, data, { new: true }); // Update existing ticket
+      io.to(data.TicketIDasRoomId).emit("updatedTicketChat", updatedTicket);
+    } catch (error) {
+      console.error('Error updating ticket:', error);
+    }
+  });
+
+  // Join department ticket room
+  socket.on("joinDepaTicketRoom", (DepartmentId) => {
+    socket.join(DepartmentId);
+    console.log(`User ${socket.id} joined room ${DepartmentId}`);
+  });
+
+  // Handle create ticket event
+  socket.on("createTicket", async (data) => {
+    console.log(data, 919191);
+
+    try {
+      const newTicket = await Ticket.create(data.createTicket); // Create a new ticket
+
+      // Option 1: Broadcast to assigned department room (assuming DepartmentId in data)
+      io.to(data.AssigSubDepId).emit("updatedDeptTicketChat", newTicket);
+
+      // Option 2: Emit to specific room based on TicketID (if stored in ticket data)
+      // io.to(newTicket.TicketIDasRoomId).emit("updatedTicketChat", newTicket);
+
+      // Respond to the client with the created ticket (optional)
+      // res.status(201).json(newTicket); // Assuming you're using Express for API routes
+    } catch (error) {
+      console.error('Error creating ticket:', error);
+    }
+  });
+});
