@@ -14,7 +14,7 @@ function Ticket() {
   const [chat, setChat] = useState([]);
   const dispatch = useDispatch();
   const { ETickets, loading } = useSelector((state) => state.empTickets);
-  
+
   const user = JSON.parse(localStorage.getItem("user"));
 
   console.log(ETickets, 2020);
@@ -34,20 +34,16 @@ function Ticket() {
   useEffect(() => {
     socket.on("updatedTicketChat", (data) => {
       const datares = data.TicketUpdates;
-      console.log(datares, 23);
       setChat((prevChat) => [...prevChat, datares]);
     });
-    // Assuming you have the ticketId available
     if (selectedTicket) {
       socket.emit("joinTicketRoom", selectedTicket.TicketID);
-      console.log(selectedTicket.TicketID, 38);
     }
 
     return () => {
       socket.off("updatedTicketChat");
     };
   }, [socket, selectedTicket]);
-
 
   const handleTicketClick = (ticket) => {
     setSelectedTicket(ticket);
@@ -86,43 +82,7 @@ function Ticket() {
       const EmpId = user.EmployeeID;
       dispatch(getEmployeeTicket(EmpId));
     }
-    // FetchQueryData();
   }, []);
-
-  // const handleChange = (e) => {
-  //   setFormData({ ...formData, [e.target.name]: e.target.value });
-  // };
-  // const handleFileChange = (e) => {
-  //   setFormData({
-  //     ...formData,
-  //     files: e.target.files,
-  //   });
-  // };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const formDataObj = new FormData();
-    for (const key in formData) {
-      formDataObj.append(key, formData[key]);
-    }
-    for (const file of formData.files) {
-      formDataObj.append("files", file);
-    }
-    try {
-      const response = await axios.post(
-        "http://localhost:2000/Ticket/Create",
-        formDataObj,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data", // Ensure correct content type for file uploads
-          },
-        }
-      );
-      console.log(response.data); // Handle success response
-    } catch (error) {
-      console.error(error); // Handle error response
-    }
-  };
 
   // const handleTicketClick = (ticket) => {
   //   setSelectedTicket(ticket);
@@ -136,7 +96,7 @@ function Ticket() {
     <>
       <div className="container mx-auto p-1 flex flex-col sm:flex-row text-sm">
         {/* Left Column */}
-        <div className="sm:w-2/3">
+        <div className="sm:w-4/3">
           {/* <div className="p-1 bg-red-400 font-bold text-center">
           <Link to={"Tickets"}>Me ||</Link> <Link to={"Tickets"}> Tickets</Link>
         </div> */}
@@ -179,11 +139,8 @@ function Ticket() {
                   <th>Description</th>
                   <th>Querycategory</th>
                   <th>QuerySubcategory</th>
-                  {/* <th>Location</th>
-                  <th>From</th>
-                  <th>Depat</th> */}
-                  <th>RStatus</th>
-                  <th> RTimestamp</th>
+                  <th>To-Det</th>
+                  <th>Time</th>
                 </tr>
               </thead>
               <tbody>
@@ -201,19 +158,10 @@ function Ticket() {
                     <td>{ticket.Description}</td>
                     <td>{ticket.Querycategory}</td>
                     <td>{ticket.QuerySubcategory}</td>
-                    {/* <td>{ticket.Employee.Location ? <>{ticket.Employee.Location}</> :<>NA</>}</td> */}
-                    {/* <td>{ticket.Employee.EmployeeName}</td>
-                    <td>{ticket.Employee.Department.DepartmentName}</td> */}
-                    <td>
-                      {ticket.TicketResolution
-                        ? ticket.TicketResolution.ResolutionStatus
-                        : "-"}
-                    </td>
-                    <td>
-                      {ticket.TicketResolution
-                        ? ticket.TicketResolution.ResolutionTimestamp
-                        : "-"}
-                    </td>
+                    <td>{ticket.Department.DepartmentName}</td>
+                    {/* <td>{ticket.Department.SubDepartments.SubDepartmentName}</td> */}
+                    {/* <td>{ticket.Employee.Department.DepartmentName}</td> */}
+                    <td>{ticket.TicketResTimeInMinutes}</td>
                   </tr>
                 ))}
               </tbody>

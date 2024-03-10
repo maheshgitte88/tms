@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 // import socket from "../socket";
 
-import io from 'socket.io-client'
+import io from "socket.io-client";
 
 // const socket = io.connect("http://localhost:2000");
 
@@ -10,11 +10,10 @@ const Reply = ({ ticketData }) => {
   if (!ticketData) {
     return <div>Loading...</div>; // or any other loading indicator
   }
-  const socket = useMemo(() =>io("http://localhost:2000"),[]);
+  const socket = useMemo(() => io("http://localhost:2000"), []);
 
-  
   const [formData, setFormData] = useState({
-    TicketID: "",
+    TicketId: "",
     UpdateDescription: "",
     DepartmentID: JSON.parse(localStorage.getItem("user")).DepartmentID,
     EmployeeID: JSON.parse(localStorage.getItem("user")).EmployeeID,
@@ -27,7 +26,7 @@ const Reply = ({ ticketData }) => {
   useEffect(() => {
     if (ticketData) {
       setFormData({
-        TicketID: ticketData?.TicketID || "",
+        TicketId: ticketData?.TicketID || "",
         UpdateDescription: "",
         DepartmentID: JSON.parse(localStorage.getItem("user")).DepartmentID,
         EmployeeID: JSON.parse(localStorage.getItem("user")).EmployeeID,
@@ -62,7 +61,7 @@ const Reply = ({ ticketData }) => {
     if (formData.files || formData.UpdateDescription.length > 0) {
       try {
         const formDataToSend = new FormData();
-        formDataToSend.append("TicketID", formData.TicketID);
+        formDataToSend.append("TicketId", formData.TicketId);
         formDataToSend.append("UpdateDescription", formData.UpdateDescription);
         formDataToSend.append("DepartmentID", formData.DepartmentID);
         formDataToSend.append("EmployeeID", formData.EmployeeID);
@@ -79,14 +78,18 @@ const Reply = ({ ticketData }) => {
           "http://localhost:2000/api/ticket-updates",
           formDataToSend
         );
-        socket.emit('ticketUpdate', { TicketUpdates: formData, TicketIDasRoomId: ticketData.TicketID })
+        socket.emit("ticketUpdate", {
+          TicketUpdates: formData,
+          TicketIDasRoomId: ticketData.TicketID,
+        });
         // socket.emit('ticketUpdate', {TicketUpdates: formData, TicketIDasRoomId:ticketData.TicketID })
         setFormData({
-          TicketID: ticketData?.TicketID || "",
+          TicketId: ticketData?.TicketID || "",
           UpdateDescription: "",
           DepartmentID: JSON.parse(localStorage.getItem("user")).DepartmentID,
           EmployeeID: JSON.parse(localStorage.getItem("user")).EmployeeID,
-          SubDepartmentID: JSON.parse(localStorage.getItem("user")).SubDepartmentID,
+          SubDepartmentID: JSON.parse(localStorage.getItem("user"))
+            .SubDepartmentID,
           Feedback: "",
           UpdateStatus: "",
           files: null,
@@ -111,10 +114,7 @@ const Reply = ({ ticketData }) => {
       ...formData,
       UpdateStatus: status,
     });
-    
   };
-
-
 
   return (
     <div className="max-w-md mx-auto mt-1 m-2 p-2 relative">

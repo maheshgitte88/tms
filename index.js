@@ -80,23 +80,19 @@ io.on("connection", (socket) => {
   });
 
   socket.on("createTicket", async (data) => {
-    console.log(data, 83)
-    const TicketData=data.createTicket;
-    console.log(TicketData, 919191);
+    const TicketData = data.createTicket;
     try {
-        const result = await createTicketAndNotify(TicketData);
-        console.log(result, 87)
-        io.to(data.AssigSubDepId).emit("updatedDeptTicketChat", result.ticket);
-        console.log(result.ticket, 90)
+      const result = await createTicketAndNotify(TicketData);
+      io.to(data.AssigSubDepId).emit("updatedDeptTicketChat", result.ticket);
     } catch (error) {
-        console.error(error);
+      console.error(error);
     }
-});
+  });
 
-//   socket.on("createTicket", (data) => {
-//     console.log(data, 919191);
-//     io.to(data.AssigSubDepId).emit("updatedDeptTicketChat", data);
-//   });
+  //   socket.on("createTicket", (data) => {
+  //     console.log(data, 919191);
+  //     io.to(data.AssigSubDepId).emit("updatedDeptTicketChat", data);
+  //   });
 });
 
 app.use(express.urlencoded({ extended: true }));
@@ -109,19 +105,65 @@ app.use("/Employee", EmployeeRoutes);
 app.use("/Ticket", TicketRoute);
 
 async function createTicketAndNotify(ticketData) {
-    try {
-        const ticket = await Ticket.create(ticketData);
-        const TRes = ticket.dataValues;
-        console.log(TRes, 112);
-        return {
-            success: true,
-            message: 'Ticket created successfully',
-            ticket: TRes
-        };
-    } catch (error) {
-        console.error('Error creating ticket:', error);
-        return { success: false, error: 'Internal Server Error' };
-    }
+  try {
+    const ticket = await Ticket.create(ticketData);
+    const TRes = ticket.dataValues;
+    const TicketId = TRes.TicketID;
+    const SubDepartmentId = TRes.AssignedToSubDepartmentID;
+
+    const tickets = await Ticket.findOne({
+      where: { TicketID: TicketId },
+      include: [
+        {
+          model: Employee,
+          include: [
+            {
+              model: Department,
+            },
+            {
+              model: SubDepartment,
+            },
+          ],
+        },
+        {
+          model: Department,
+          include: [
+            {
+              model: SubDepartment,
+              where: { SubDepartmentId: SubDepartmentId },
+            },
+          ],
+        },
+      ],
+    });
+
+    const ticketValues = {
+      TicketID: tickets.TicketID,
+      TicketType: tickets.TicketType,
+      Status: tickets.Status,
+      Description: tickets.Description,
+      LeadId: tickets.LeadId,
+      TicketResTimeInMinutes: tickets.TicketResTimeInMinutes,
+      Querycategory: tickets.Querycategory,
+      QuerySubcategory: tickets.QuerySubcategory,
+      AttachmentUrl: tickets.AttachmentUrl,
+      updatedAt: tickets.updatedAt,
+      createdAt: tickets.createdAt,
+      Employee: tickets.Employee.dataValues,
+      // Department: tickets.Employee.Department.dataValues,
+      SubDepartment: tickets.Employee.SubDepartment.dataValues,
+      Department: tickets.Department.dataValues,
+    };
+
+    return {
+      success: true,
+      message: "Ticket created successfully",
+      ticket: ticketValues,
+    };
+  } catch (error) {
+    console.error("Error creating ticket:", error);
+    return { success: false, error: "Internal Server Error" };
+  }
 }
 
 app.post("/Ticket/create-ticket", async (req, res) => {
@@ -143,98 +185,13 @@ app.post("/Ticket/create-ticket", async (req, res) => {
   }
 });
 
-app.get("/department/:departmentId", async (req, res) => {
-  const departmentId = req.params.departmentId;
+app.get("/Ticket-updates/:TicketId", async (req, res) => {
+  const TicketId = req.params.TicketId;
   try {
-    // Fetch department details
-    const department = await Department.findAll({
-      where: { DepartmentID: departmentId },
-      include: [
-        {
-          model: SubDepartment,
-        },
-      ],
+    const TicketUpdates = await TicketUpdate.findAll({
+      where: { TicketId: TicketId },
     });
-
-    if (!department) {
-      return res.status(404).json({ error: "Department not found" });
-    }
-
-    // Fetch sub-departments
-    // const subDepartments = await SubDepartment.findAll({
-    //     where: { DepartmentID: departmentId },
-    // });
-
-    // Fetch employees
-
-    const employees = await Employee.findAll({
-      where: { DepartmentID: departmentId },
-      include: [
-        {
-          model: Department,
-        },
-        {
-          model: SubDepartment,
-        },
-      ],
-    });
-    const tickets = await Ticket.findAll({
-      where: { AssignedToDepartmentID: departmentId },
-      include: [
-        {
-          model: Employee,
-          include: [
-            {
-              model: Department,
-            },
-            {
-              model: SubDepartment,
-            },
-          ],
-        },
-        {
-          model: Department,
-          include: [
-            {
-              model: SubDepartment,
-            },
-          ],
-        },
-        {
-          model: TicketUpdate,
-          include: [
-            {
-              model: Employee,
-              include: [
-                {
-                  model: Department,
-                },
-                {
-                  model: SubDepartment,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          model: TicketResolution,
-        },
-      ],
-    });
-    // Fetch ticket resolutions
-    // const ticketResolutions = await TicketResolution.findAll({
-
-    // });
-
-    const data = {
-      department,
-      // subDepartments,
-      employees,
-      tickets,
-      // ticketResolutions,
-    };
-
-    res.json(data);
+    res.json(TicketUpdates);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -243,37 +200,16 @@ app.get("/department/:departmentId", async (req, res) => {
 
 app.get("/department/:departmentId/:SubDepartmentId", async (req, res) => {
   const departmentId = req.params.departmentId;
-  const SubDepartmentId = req.params.departmentId;
+  const SubDepartmentId = req.params.SubDepartmentId;
   try {
-    // Fetch department details
-    // const department = await Department.findAll({
-    //     where: { DepartmentID: departmentId},
-    //     include: [
-    //         {
-    //             model: SubDepartment,
-    //             where: { id: SubDepartmentId},
-    //         }
-    //     ],
-    // });
-
     if (!departmentId) {
       return res.status(404).json({ error: "Department not found" });
     }
-
-    // const employees = await Employee.findAll({
-    //     where: { DepartmentID: departmentId, SubDepartmentID: SubDepartmentId},
-    //     include: [
-    //         {
-    //             model: Department,
-    //         },
-    //         {
-    //             model: SubDepartment,
-    //         }
-    //     ],
-    // });
-
     const tickets = await Ticket.findAll({
-      where: { AssignedToDepartmentID: departmentId },
+      where: {
+        AssignedToSubDepartmentID: departmentId,
+        AssignedToSubDepartmentID: SubDepartmentId,
+      },
       include: [
         {
           model: Employee,
@@ -347,14 +283,14 @@ app.get("/Tickets/:EmployeeID", async (req, res) => {
       include: [
         {
           model: Employee,
-          include: [
-            {
-              model: Department,
-            },
-            {
-              model: SubDepartment,
-            },
-          ],
+          // include: [
+          //   {
+          //     model: Department,
+          //   },
+          //   {
+          //     model: SubDepartment,
+          //   },
+          // ],
         },
         {
           model: Department,
@@ -411,13 +347,11 @@ app.get("/get", async (req, res) => {
     });
   } catch (error) {
     console.error("Unable to connect to the database:", error);
-    res
-      .status(500)
-      .json({
-        response: "error",
-        message: "Internal Server Error",
-        status: 500,
-      });
+    res.status(500).json({
+      response: "error",
+      message: "Internal Server Error",
+      status: 500,
+    });
   }
 });
 
@@ -481,13 +415,11 @@ app.post("/employees", async (req, res) => {
     res.status(201).json({ response: "success", data: employee, status: 201 });
   } catch (error) {
     console.error("Error creating employee:", error);
-    res
-      .status(500)
-      .json({
-        response: "error",
-        message: "Internal Server Error",
-        status: 500,
-      });
+    res.status(500).json({
+      response: "error",
+      message: "Internal Server Error",
+      status: 500,
+    });
   }
 });
 
@@ -504,13 +436,11 @@ app.post("/students", async (req, res) => {
     res.status(201).json({ response: "success", data: student, status: 201 });
   } catch (error) {
     console.error("Error creating student:", error);
-    res
-      .status(500)
-      .json({
-        response: "error",
-        message: "Internal Server Error",
-        status: 500,
-      });
+    res.status(500).json({
+      response: "error",
+      message: "Internal Server Error",
+      status: 500,
+    });
   }
 });
 
@@ -539,7 +469,7 @@ app.post("/api/img-save", async (req, res) => {
 
 app.post("/api/ticket-updates", async (req, res) => {
   const {
-    TicketID,
+    TicketId,
     UpdateDescription,
     Feedback,
     UpdateStatus,
@@ -551,7 +481,7 @@ app.post("/api/ticket-updates", async (req, res) => {
   console.log(req.body, 230);
 
   try {
-    const ticket = await Ticket.findByPk(TicketID);
+    const ticket = await Ticket.findByPk(TicketId);
     if (!ticket) {
       return res.status(404).json({ error: "Ticket not found" });
     }
@@ -570,7 +500,7 @@ app.post("/api/ticket-updates", async (req, res) => {
 
     // Create a new TicketUpdate record
     const ticketUpdate = await TicketUpdate.create({
-      TicketID,
+      TicketId,
       UpdateDescription,
       UpdatedAttachmentUrls: updatedAttachmentUrls,
       EmployeeID,
@@ -592,13 +522,11 @@ app.post("/api/ticket-updates", async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating TicketUpdate:", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error creating TicketUpdate",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error creating TicketUpdate",
+      error: error.message,
+    });
   }
 });
 
@@ -627,13 +555,11 @@ app.post("/ticketresolutions", async (req, res) => {
       .json({ response: "success", data: ticketResolution, status: 201 });
   } catch (error) {
     console.error("Error creating ticket resolution:", error);
-    res
-      .status(500)
-      .json({
-        response: "error",
-        message: "Internal Server Error",
-        status: 500,
-      });
+    res.status(500).json({
+      response: "error",
+      message: "Internal Server Error",
+      status: 500,
+    });
   }
 });
 

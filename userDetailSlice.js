@@ -221,3 +221,195 @@ io.on("connection", (socket) => {
     }
   });
 });
+
+
+{
+  TicketID: 90,
+  TicketType: 'OverNight',
+  Status: 'Pending',
+  Description: 'my Team data',
+  LeadId: '',
+  TicketResTimeInMinutes: 15,
+  Querycategory: 'Extraa Edge',
+  QuerySubcategory: 'Leads Shuffle',
+  AttachmentUrl: null,
+  updatedAt: 2024-03-09T20:24:52.000Z,
+  createdAt: 2024-03-09T20:24:52.000Z,
+  Employee: {
+    EmployeeID: 6,
+    EmployeeName: 'Seema Patil',
+    Location: 'Baner',
+    EmployeeEmail: 'seema.patil@mitsde.com',
+    EmployeePassword: 'seema.patil@mitsde.com',
+    createdAt: 2024-03-03T10:47:28.000Z,
+    updatedAt: 2024-03-03T10:47:28.000Z,
+    DepartmentID: 4,
+    SubDepartmentID: 7,
+    Department: Department {
+      dataValues: [Object],
+      _previousDataValues: [Object],
+      uniqno: 1,
+      _changed: Set(0) {},
+      _options: [Object],
+      isNewRecord: false
+    },
+    SubDepartment: SubDepartment {
+      dataValues: [Object],
+      _previousDataValues: [Object],
+      uniqno: 1,
+      _changed: Set(0) {},
+      _options: [Object],
+      isNewRecord: false
+    }
+  },
+  Department: {
+    DepartmentID: 4,
+    DepartmentName: 'sales ',
+    createdAt: 2024-02-29T09:28:39.000Z,
+    updatedAt: 2024-02-29T09:28:39.000Z
+  },
+  SubDepartment: {
+    SubDepartmentID: 7,
+    SubDepartmentName: 'counselor',
+    createdAt: 2024-02-29T09:28:41.000Z,
+    updatedAt: 2024-02-29T09:28:41.000Z,
+    DepartmentId: 4
+  },
+  AssignedDepartment: {
+    DepartmentID: 1,
+    DepartmentName: 'IT',
+    createdAt: 2024-02-29T09:28:39.000Z,
+    updatedAt: 2024-02-29T09:28:39.000Z,
+    SubDepartments: [ [SubDepartment] ]
+  }
+} 163
+{
+  success: true,
+  message: 'Ticket created successfully',
+  ticket: {
+    TicketID: 90,
+    TicketType: 'OverNight',
+    Status: 'Pending',
+    Description: 'my Team data',
+    LeadId: '',
+    TicketResTimeInMinutes: 15,
+    Querycategory: 'Extraa Edge',
+    QuerySubcategory: 'Leads Shuffle',
+    AttachmentUrl: null,
+    updatedAt: 2024-03-09T20:24:52.000Z,
+    createdAt: 2024-03-09T20:24:52.000Z,
+    Employee: {
+      EmployeeID: 6,
+      EmployeeName: 'Seema Patil',
+      Location: 'Baner',
+      EmployeeEmail: 'seema.patil@mitsde.com',
+      EmployeePassword: 'seema.patil@mitsde.com',
+      createdAt: 2024-03-03T10:47:28.000Z,
+      updatedAt: 2024-03-03T10:47:28.000Z,
+      DepartmentID: 4,
+      SubDepartmentID: 7,
+      Department: [Department],
+      SubDepartment: [SubDepartment]
+    },
+    Department: {
+      DepartmentID: 4,
+      DepartmentName: 'sales ',
+      createdAt: 2024-02-29T09:28:39.000Z,
+      updatedAt: 2024-02-29T09:28:39.000Z
+    },
+    SubDepartment: {
+      SubDepartmentID: 7,
+      SubDepartmentName: 'counselor',
+      createdAt: 2024-02-29T09:28:41.000Z,
+      updatedAt: 2024-02-29T09:28:41.000Z,
+      DepartmentId: 4
+    },
+    AssignedDepartment: {
+      DepartmentID: 1,
+      DepartmentName: 'IT',
+      createdAt: 2024-02-29T09:28:39.000Z,
+      updatedAt: 2024-02-29T09:28:39.000Z,
+      SubDepartments: [Array]
+    }
+  }
+} 87
+{
+  TicketID: 90,
+  TicketType: 'OverNight',
+  Status: 'Pending',
+  Description: 'my Team data',
+  LeadId: '',
+  TicketResTimeInMinutes: 15,
+  Querycategory: 'Extraa Edge',
+  QuerySubcategory: 'Leads Shuffle',
+  AttachmentUrl: null,
+  updatedAt: 2024-03-09T20:24:52.000Z,
+  createdAt: 2024-03-09T20:24:52.000Z,
+  Employee: {
+    EmployeeID: 6,
+    EmployeeName: 'Seema Patil',
+    Location: 'Baner',
+    EmployeeEmail: 'seema.patil@mitsde.com',
+    EmployeePassword: 'seema.patil@mitsde.com',
+    createdAt: 2024-03-03T10:47:28.000Z,
+    updatedAt: 2024-03-03T10:47:28.000Z,
+    DepartmentID: 4,
+    SubDepartmentID: 7,
+    Department: Department {
+      dataValues: [Object],
+      _previousDataValues: [Object],
+      uniqno: 1,
+      _changed: Set(0) {},
+      _options: [Object],
+      isNewRecord: false
+    },
+    SubDepartment: SubDepartment {
+      dataValues: [Object],
+      _previousDataValues: [Object],
+      uniqno: 1,
+      _changed: Set(0) {},
+      _options: [Object],
+      isNewRecord: false
+    }
+  },
+  Department: {
+    DepartmentID: 4,
+    DepartmentName: 'sales ',
+    createdAt: 2024-02-29T09:28:39.000Z,
+    updatedAt: 2024-02-29T09:28:39.000Z
+  },
+  SubDepartment: {
+    SubDepartmentID: 7,
+    SubDepartmentName: 'counselor',
+    createdAt: 2024-02-29T09:28:41.000Z,
+    updatedAt: 2024-02-29T09:28:41.000Z,
+    DepartmentId: 4
+  },
+  AssignedDepartment: {
+    DepartmentID: 1,
+    DepartmentName: 'IT',
+    createdAt: 2024-02-29T09:28:39.000Z,
+    updatedAt: 2024-02-29T09:28:39.000Z,
+    SubDepartments: [ [SubDepartment] ]
+  }
+} 90
+
+
+
+
+{
+  TicketID: 88,
+  TicketType: 'OverNight',
+  Status: 'Pending',
+  Description: 'my Team',
+  LeadId: '',
+  TicketResTimeInMinutes: 15,
+  AssignedToDepartmentID: 1,
+  AssignedToSubDepartmentID: 4,
+  EmployeeID: 6,
+  Querycategory: 'Extraa Edge',
+  QuerySubcategory: 'Leads Shuffle',
+  AttachmentUrl: null,
+  updatedAt: 2024-03-09T19:53:03.612Z,
+  createdAt: 2024-03-09T19:53:03.612Z
+} 112

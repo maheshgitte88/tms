@@ -1,0 +1,82 @@
+{
+    "TicketID": 98,
+    "TicketType": "OverNight",
+    "Status": "Pending",
+    "Description": "Pause Priya Leads",
+    "Querycategory": "Extraa Edge",
+    "QuerySubcategory": "Counselor Lead Pause/ Unpause",
+    "TicketResTimeInMinutes": 15,
+    "LeadId": "",
+    "ResolutionDescription": null,
+    "CloseDescription": null,
+    "ResolutionFeedback": null,
+    "AssignedToDepartmentID": 1,
+    "AssignedToSubDepartmentID": 4,
+    "TransferredToDepartmentID": null,
+    "TransferredToSubDepartmentID": null,
+    "AttachmentUrl": null,
+    "createdAt": "2024-03-09T21:00:23.000Z",
+    "updatedAt": "2024-03-09T21:00:23.000Z",
+    "StudentId": null,
+    "EmployeeID": 6,
+    "Employee": {
+        "EmployeeID": 6,
+        "EmployeeName": "Seema Patil",
+        "Location": "Baner",
+        "EmployeeEmail": "seema.patil@mitsde.com",
+        "EmployeePassword": "seema.patil@mitsde.com",
+        "createdAt": "2024-03-03T10:47:28.000Z",
+        "updatedAt": "2024-03-03T10:47:28.000Z",
+        "DepartmentID": 4,
+        "SubDepartmentID": 7,
+        "Department": {
+            "DepartmentID": 4,
+            "DepartmentName": "sales ",
+            "createdAt": "2024-02-29T09:28:39.000Z",
+            "updatedAt": "2024-02-29T09:28:39.000Z"
+        },
+        "SubDepartment": {
+            "SubDepartmentID": 7,
+            "SubDepartmentName": "counselor",
+            "createdAt": "2024-02-29T09:28:41.000Z",
+            "updatedAt": "2024-02-29T09:28:41.000Z",
+            "DepartmentId": 4
+        }
+    },
+    "Department": {
+        "DepartmentID": 1,
+        "DepartmentName": "IT",
+        "createdAt": "2024-02-29T09:28:39.000Z",
+        "updatedAt": "2024-02-29T09:28:39.000Z",
+        "SubDepartments": [
+            {
+                "SubDepartmentID": 4,
+                "SubDepartmentName": "MIS",
+                "createdAt": "2024-02-29T09:28:41.000Z",
+                "updatedAt": "2024-02-29T09:28:41.000Z",
+                "DepartmentId": 1
+            },
+            {
+                "SubDepartmentID": 3,
+                "SubDepartmentName": "LMS",
+                "createdAt": "2024-02-29T09:28:40.000Z",
+                "updatedAt": "2024-02-29T09:28:40.000Z",
+                "DepartmentId": 1
+            },
+            {
+                "SubDepartmentID": 2,
+                "SubDepartmentName": "App Support",
+                "createdAt": "2024-02-29T09:28:40.000Z",
+                "updatedAt": "2024-02-29T09:28:40.000Z",
+                "DepartmentId": 1
+            },
+            {
+                "SubDepartmentID": 1,
+                "SubDepartmentName": "Hardware Support",
+                "createdAt": "2024-02-29T09:28:39.000Z",
+                "updatedAt": "2024-02-29T09:28:39.000Z",
+                "DepartmentId": 1
+            }
+        ]
+    }
+}

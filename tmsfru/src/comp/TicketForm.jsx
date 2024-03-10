@@ -2,7 +2,10 @@ import axios from "axios";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { useDispatch, useSelector } from "react-redux";
-import { createTicket, updateEmpTicket } from "../app/features/EmpTicketsSlices";
+import {
+  createTicket,
+  updateEmpTicket,
+} from "../app/features/EmpTicketsSlices";
 import { QueryCatSubHierarchyData } from "../app/features/QueryDataSlices";
 import { io } from "socket.io-client";
 
@@ -45,18 +48,15 @@ function TicketForm() {
 
   useEffect(() => {
     socket.on("updatedDeptTicketChat", (data) => {
-      console.log(data, 616263);
       dispatch(updateEmpTicket(data));
     });
 
     // Assuming you have the ticketId available
     if (formData.AssignedToSubDepartmentID) {
       socket.emit("joinDepaTicketRoom", formData.AssignedToSubDepartmentID);
-      console.log(formData.AssignedToSubDepartmentID, 38);
     }
     if (ticketAsgSubDepId) {
       socket.emit("joinDepaTicketRoom", ticketAsgSubDepId);
-      console.log(ticketAsgSubDepId, 38);
     }
 
     // return () => {
@@ -131,7 +131,7 @@ function TicketForm() {
   const getAttachmentUrls = async (files) => {
     try {
       const urls = [];
-      if(files){
+      if (files) {
         for (const file of files) {
           const formData = new FormData();
           formData.append("file", file);
@@ -148,10 +148,9 @@ function TicketForm() {
           urls.push(response.data.data);
         }
         return urls;
-      }else{
+      } else {
         return null;
       }
-
     } catch (error) {
       console.error("Error fetching attachment URLs:", error);
       throw error;
@@ -161,8 +160,8 @@ function TicketForm() {
   useEffect(() => {
     dispatch(QueryCatSubHierarchyData());
     populateDepartments(QueryCatSubHierarchy);
-  }, []);
-
+  }, [showForm]);
+  console.log(QueryCatSubHierarchy, 167);
   const populateDepartments = (QueryCatSubHierarchy) => {
     if (QueryCatSubHierarchy && QueryCatSubHierarchy.length > 0) {
       const departmentOptions = QueryCatSubHierarchy.map((dep) => (
@@ -215,7 +214,6 @@ function TicketForm() {
   };
 
   function getTicketType(currentTime, currentDay) {
-    // Adjust currentTime to Indian Standard Time (IST)
     const currentTimeIST = new Date(
       currentTime.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
     );
@@ -272,9 +270,12 @@ function TicketForm() {
         AttachmentUrl: updatedAttachmentUrls, // Send file URLs instead of actual files
         EmployeeID: JSON.parse(localStorage.getItem("user")).EmployeeID,
       };
-
+      socket.emit("createTicket", {
+        createTicket: formDataToSend,
+        AssigSubDepId: ticketAsgSubDepId,
+      });
       // Dispatch createTicket action with form data
-      dispatch(createTicket(formDataToSend));
+      // dispatch(createTicket(formDataToSend));
     } catch (error) {
       console.error("Error creating ticket:", error);
     }

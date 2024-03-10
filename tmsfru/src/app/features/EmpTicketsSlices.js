@@ -4,7 +4,6 @@ import axios from "axios";
 export const createTicket = createAsyncThunk(
     "createNewticket",
     async (data, { rejectWithValue }) => {
-        console.log("createNewticket", data);
         try {
             const response = await axios.post('http://localhost:2000/Ticket/create-ticket', data);
             const result = response.data;
@@ -21,7 +20,6 @@ export const getEmployeeTicket = createAsyncThunk(
         try {
             const res = await axios.get(`http://localhost:2000/Tickets/${EmpId}`);
             const resData = res.data.tickets;
-            console.log(resData ,242424)
             return resData;
         } catch (error) {
             return rejectWithValue(error);
