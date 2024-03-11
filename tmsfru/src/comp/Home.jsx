@@ -101,29 +101,39 @@ function Home() {
     setResolvedCount(counts.resolvedCount);
   }, [DTickets]);
 
-
-
   useEffect(() => {
     const dpId = user.DepartmentID;
     const SubDapId = user.SubDepartmentID;
     dispatch(getDepTicket({ departmentId: dpId, SubDepartmentId: SubDapId }));
   }, []);
 
-  const handleTicketClick = async (ticket)  => {
-    console.log(ticket.TicketID, 112)
+  const handleTicketClick = async (ticket) => {
     setSelectedTicket(ticket);
-    // const TicketUpdates= await axios.get(`http://localhost:2000/Ticket-updates/${ticket.TicketID}`)
-    // console.log(TicketUpdates.data, 116)
-    setTicketUpdateData(ticket.TicketUpdates);
   };
-console.log(ticketupdateData, 119)
+
+  const TicketUpdateData = async (selectedTicket) => {
+    console.log(selectedTicket, 117);
+    try {
+      const TicketUpdates = await axios.get(
+        `http://localhost:2000/Ticket-updates/${selectedTicket}`
+      );
+      console.log(TicketUpdates.data, 116);
+      if (TicketUpdates) {
+        setTicketUpdateData(TicketUpdates.data);
+      }
+    } catch (error) {
+      console.log("No Ticket Updates for this Ticket");
+    }
+  };
+
+  console.log(ticketupdateData, 119);
+  console.log(ticketupdateData.length, 123);
+
   useEffect(() => {
-    setChat(ticketupdateData);
+    if (selectedTicket) {
+      TicketUpdateData(selectedTicket.TicketID);
+    }
   }, [selectedTicket]);
-
- 
-
- 
 
   return (
     <div className="container mx-auto p-1 flex flex-col sm:flex-row text-sm">
@@ -161,7 +171,7 @@ console.log(ticketupdateData, 119)
             </div>
           </div>
         )}
-       <div className="table-container">
+        <div className="table-container">
           <table
             className={`custom-table ${selectedTicket ? "selected-table" : ""}`}
           >
@@ -175,6 +185,7 @@ console.log(ticketupdateData, 119)
                 <th>Query</th>
                 <th>Sub-Query</th>
                 <th>Location</th>
+                <th>updates</th>
                 <th>From</th>
                 <th>Depat</th>
                 <th>Time</th>
@@ -198,10 +209,10 @@ console.log(ticketupdateData, 119)
                   <td>{ticket.Querycategory}</td>
                   <td>{ticket.QuerySubcategory}</td>
                   <td>{ticket.Employee.Location}</td>
+                  <td><p className="bg-red-400 text-center rounded-full">{ticket.TicketUpdates ? <>{ticket.TicketUpdates.length}</>: <>0</>}</p></td>
                   <td>{ticket.Employee.EmployeeName}</td>
                   <td>{ticket.Employee.Department.DepartmentName}</td>
                   <td>{ticket.TicketResTimeInMinutes}</td>
-
                 </tr>
               ))}
             </tbody>
@@ -253,7 +264,7 @@ console.log(ticketupdateData, 119)
           >
             <div className="mt-4">
               <div className="ticket-updates-container">
-                {chat.map((update, index) => (
+                {ticketupdateData.map((update, index) => (
                   <div
                     key={index}
                     className={`ticket-update ${

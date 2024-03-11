@@ -30,8 +30,7 @@ const Reply = ({ ticketData }) => {
         UpdateDescription: "",
         DepartmentID: JSON.parse(localStorage.getItem("user")).DepartmentID,
         EmployeeID: JSON.parse(localStorage.getItem("user")).EmployeeID,
-        SubDepartmentID: JSON.parse(localStorage.getItem("user"))
-          .SubDepartmentID,
+        SubDepartmentID: JSON.parse(localStorage.getItem("user")).SubDepartmentID,
         Feedback: "",
         UpdateStatus: "Resolve",
         files: null,
@@ -78,18 +77,14 @@ const Reply = ({ ticketData }) => {
           "http://localhost:2000/api/ticket-updates",
           formDataToSend
         );
-        socket.emit("ticketUpdate", {
-          TicketUpdates: formData,
-          TicketIDasRoomId: ticketData.TicketID,
-        });
+        socket.emit("ticketUpdate", {TicketUpdates: formData, TicketIDasRoomId: ticketData.TicketID});
         // socket.emit('ticketUpdate', {TicketUpdates: formData, TicketIDasRoomId:ticketData.TicketID })
         setFormData({
           TicketId: ticketData?.TicketID || "",
           UpdateDescription: "",
           DepartmentID: JSON.parse(localStorage.getItem("user")).DepartmentID,
           EmployeeID: JSON.parse(localStorage.getItem("user")).EmployeeID,
-          SubDepartmentID: JSON.parse(localStorage.getItem("user"))
-            .SubDepartmentID,
+          SubDepartmentID: JSON.parse(localStorage.getItem("user")).SubDepartmentID,
           Feedback: "",
           UpdateStatus: "",
           files: null,

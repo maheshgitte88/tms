@@ -83,6 +83,7 @@ io.on("connection", (socket) => {
     const TicketData = data.createTicket;
     try {
       const result = await createTicketAndNotify(TicketData);
+      console.log(result.ticket, 86)
       io.to(data.AssigSubDepId).emit("updatedDeptTicketChat", result.ticket);
     } catch (error) {
       console.error(error);
@@ -109,6 +110,7 @@ async function createTicketAndNotify(ticketData) {
     const ticket = await Ticket.create(ticketData);
     const TRes = ticket.dataValues;
     const TicketId = TRes.TicketID;
+
     const SubDepartmentId = TRes.AssignedToSubDepartmentID;
 
     const tickets = await Ticket.findOne({
@@ -134,9 +136,25 @@ async function createTicketAndNotify(ticketData) {
             },
           ],
         },
+        {
+          model: TicketUpdate,
+          include: [
+            {
+              model: Employee,
+              // include: [
+              //     {
+              //         model: Department,
+              //     },
+              //     {
+              //         model: SubDepartment,
+              //     }
+              // ],
+            },
+          ],
+        },
       ],
     });
-
+console.log(tickets, 157)
     const ticketValues = {
       TicketID: tickets.TicketID,
       TicketType: tickets.TicketType,
@@ -153,8 +171,9 @@ async function createTicketAndNotify(ticketData) {
       // Department: tickets.Employee.Department.dataValues,
       SubDepartment: tickets.Employee.SubDepartment.dataValues,
       Department: tickets.Department.dataValues,
+      TicketUpdate:tickets.TicketUpdate
     };
-
+console.log(ticketValues,176)
     return {
       success: true,
       message: "Ticket created successfully",
@@ -464,7 +483,7 @@ app.post("/api/img-save", async (req, res) => {
       message: "TicketUpdate created successfully",
       data: updatedAttachmentUrls,
     });
-  } catch (error) {}
+  } catch (error) { }
 });
 
 app.post("/api/ticket-updates", async (req, res) => {
