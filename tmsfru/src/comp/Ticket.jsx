@@ -5,13 +5,16 @@ import Reply from "./Reply";
 import io from "socket.io-client";
 import TicketForm from "./TicketForm";
 import { useDispatch, useSelector } from "react-redux";
-import { getEmployeeTicket } from "../app/features/EmpTicketsSlices";
+import { getEmployeeTicket, updateTicketUpdate } from "../app/features/EmpTicketsSlices";
 function Ticket() {
   const socket = useMemo(() => io("http://localhost:2000"), []);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const ticketUpdatesContainerRef = useRef(null);
   const [ticketupdateData, setTicketUpdateData] = useState([]);
-  const [chat, setChat] = useState([]);
+  // const [chat, setChat] = useState([]);
+  const [notificationPermission, setNotificationPermission] =
+    useState("default");
+
   const dispatch = useDispatch();
   const { ETickets, loading } = useSelector((state) => state.empTickets);
 
@@ -31,35 +34,58 @@ function Ticket() {
     EmployeeID: JSON.parse(localStorage.getItem("user")).EmployeeID, // EmployeeID from user object in local storage
   });
 
-  useEffect(() => {
-    socket.on("updatedTicketChat", (data) => {
-      const datares = data.TicketUpdates;
-      setChat((prevChat) => [...prevChat, datares]);
-    });
-    if (selectedTicket) {
-      socket.emit("joinTicketRoom", selectedTicket.TicketID);
-    }
+  // useEffect(() => {
+  //   socket.on("updatedTicketChat", (data) => {
+  //     const datares = data.TicketUpdates;
+  //     setChat((prevChat) => [...prevChat, datares]);
+  //   });
+  //   if (selectedTicket) {
+  //     socket.emit("joinTicketRoom", selectedTicket.TicketID);
+  //   }
 
-    return () => {
-      socket.off("updatedTicketChat");
-    };
-  }, [socket, selectedTicket]);
+  //   return () => {
+  //     socket.off("updatedTicketChat");
+  //   };
+  // }, [socket, selectedTicket]);
 
-  const handleTicketClick = (ticket) => {
+  const handleTicketClick = async (ticket) => {
     setSelectedTicket(ticket);
-    setTicketUpdateData(ticket.TicketUpdates);
   };
+
+  const TicketUpdateData = async (selectedTicket) => {
+    console.log(selectedTicket, 117);
+    try {
+      const TicketUpdates = await axios.get(
+        `http://localhost:2000/Ticket-updates/${selectedTicket}`
+      );
+      console.log(TicketUpdates.data, 60);
+      if (TicketUpdates) {
+        setTicketUpdateData(TicketUpdates.data);
+      }
+    } catch (error) {
+      console.log("No Ticket Updates for this Ticket");
+    }
+  };
+
+  console.log(ticketupdateData, 69);
+  console.log(ticketupdateData.length, 70);
+
+  useEffect(() => {
+    if (selectedTicket) {
+      TicketUpdateData(selectedTicket.TicketID);
+    }
+  }, [selectedTicket, ]);
 
   useEffect(() => {
     if (ticketUpdatesContainerRef.current) {
       ticketUpdatesContainerRef.current.scrollTop =
         ticketUpdatesContainerRef.current.scrollHeight;
     }
-  }, [selectedTicket, chat]);
+  }, [selectedTicket, ticketupdateData ]);
 
   // useEffect(() => {
   //   // Count tickets based on their status
-  //   const counts = data.reduce(
+  //   const counts = ETickets.reduce(
   //     (acc, ticket) => {
   //       if (ticket.Status === "Closed") {
   //         acc.closedCount++;
@@ -72,10 +98,10 @@ function Ticket() {
   //     },
   //     { closedCount: 0, openCount: 0, resolvedCount: 0 }
   //   );
-  //   setClosedCount(counts.closedCount);
-  //   setOpenCount(counts.openCount);
-  //   setResolvedCount(counts.resolvedCount);
-  // }, [data]);
+  //   // setClosedCount(counts.closedCount);
+  //   // setOpenCount(counts.openCount);
+  //   // setResolvedCount(counts.resolvedCount);
+  // }, [ETickets]);
 
   useEffect(() => {
     if (user) {
@@ -84,13 +110,54 @@ function Ticket() {
     }
   }, []);
 
-  // const handleTicketClick = (ticket) => {
-  //   setSelectedTicket(ticket);
-  // };
-
   useEffect(() => {
-    setChat(ticketupdateData);
-  }, [selectedTicket]);
+    const socket = io("http://localhost:2000");
+
+    ETickets.forEach((ticket) => {
+      console.log(ticket.TicketID, 117);
+      socket.emit("joinTicketRoom", ticket.TicketID);
+    });
+    // socket.emit("ticketUpdate", {TicketUpdates: formData, TicketIDasRoomId: ticketData.TicketID});
+    // Listen for ticket updates
+    socket.on("updatedTicketChat", (data) => {
+      // Handle ticket update notification here
+      console.log(data.TicketUpdates, 124124)
+      dispatch(updateTicketUpdate(data.TicketUpdates));
+      // setTicketUpdateData(TicketUpdates.data);
+      setTicketUpdateData((prevChat) => [...prevChat, data.TicketUpdates]);
+
+      showNotification(data);
+    });
+
+    // Check for notification permission
+    if ("Notification" in window) {
+      Notification.requestPermission().then((permission) => {
+        setNotificationPermission(permission);
+      });
+    }
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [ETickets, socket]);
+
+  console.log(notificationPermission, 144)
+
+  // Function to show notification
+  const showNotification = (data) => {
+    console.log(data, 828282);
+    if (notificationPermission === "granted") {
+      const { TicketUpdates, TicketIDasRoomId } = data;
+      const notificationTitle = `Ticket Update`;
+      const notificationBody = `Ticket ${TicketIDasRoomId} has ${TicketUpdates.UpdateDescription} updates.`;
+      const notification = new Notification(notificationTitle, { body: notificationBody });
+
+      notification.onclick = () => {
+        console.log("Notification clicked");
+        // Handle notification click event (e.g., navigate to ticket details)
+      };
+    }
+  };
 
   return (
     <>
@@ -141,6 +208,7 @@ function Ticket() {
                   <th>QuerySubcategory</th>
                   <th>To-Det</th>
                   <th>Time</th>
+                  <th>notifications</th>
                 </tr>
               </thead>
               <tbody>
@@ -162,6 +230,15 @@ function Ticket() {
                     {/* <td>{ticket.Department.SubDepartments.SubDepartmentName}</td> */}
                     {/* <td>{ticket.Employee.Department.DepartmentName}</td> */}
                     <td>{ticket.TicketResTimeInMinutes}</td>
+                    <td>
+                      <p className="bg-red-400 text-center rounded-full">
+                        {ticket.TicketUpdates ? (
+                          <>{ticket.TicketUpdates.length}</>
+                        ) : (
+                          <>0</>
+                        )}
+                      </p>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -178,7 +255,7 @@ function Ticket() {
             >
               <div className="mt-4">
                 <div className="ticket-updates-container">
-                  {chat.map((update, index) => (
+                  {ticketupdateData.map((update, index) => (
                     <div
                       key={index}
                       className={`ticket-update ${

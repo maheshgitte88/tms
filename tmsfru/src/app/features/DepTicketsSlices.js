@@ -47,6 +47,14 @@ export const DepTickets = createSlice({
       const updatedTickets = action.payload;
       state.DTickets = updatedTickets;
     },
+    updateDtTicketUpdate: (state, action) => {
+      const updatedTicket = action.payload;
+      const ticketIndex = state.DTickets.findIndex(ticket => ticket.TicketID === updatedTicket.TicketId);
+
+      if (ticketIndex !== -1) {
+          state.DTickets[ticketIndex].TicketUpdates.push(updatedTicket);
+      }
+  },
   }, // Use an empty `reducers` object if you don't have custom reducers
   extraReducers: (builder) => {
     builder
@@ -75,5 +83,5 @@ export const DepTickets = createSlice({
   },
 });
 
-export const { updateDeptTicket, updateTicket } = DepTickets.actions;
+export const { updateDeptTicket, updateTicket, updateDtTicketUpdate } = DepTickets.actions;
 export default DepTickets.reducer;

@@ -41,7 +41,15 @@ export const EmpTickets = createSlice({
         updateEmpTicket: (state, action) => {
             state.ETickets.push(action.payload);
         },
-     }, // Use an empty `reducers` object if you don't have custom reducers
+        updateTicketUpdate: (state, action) => {
+            const updatedTicket = action.payload;
+            const ticketIndex = state.ETickets.findIndex(ticket => ticket.TicketID === updatedTicket.TicketId);
+
+            if (ticketIndex !== -1) {
+                state.ETickets[ticketIndex].TicketUpdates.push(updatedTicket);
+            }
+        },
+    }, // Use an empty `reducers` object if you don't have custom reducers
     extraReducers: (builder) => {
         builder
             .addCase(createTicket.pending, (state) => {
@@ -68,6 +76,6 @@ export const EmpTickets = createSlice({
             });
     },
 });
-export const { updateEmpTicket } = EmpTickets.actions;
+export const { updateEmpTicket, updateTicketUpdate } = EmpTickets.actions;
 
 export default EmpTickets.reducer;

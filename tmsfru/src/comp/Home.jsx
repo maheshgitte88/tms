@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   getDepTicket,
   updateDeptTicket,
+  updateDtTicketUpdate,
   updateTicket,
 } from "../app/features/DepTicketsSlices";
 import axios from "axios";
@@ -17,7 +18,7 @@ function Home() {
 
   const { DTickets, loading } = useSelector((state) => state.app);
   console.log(DTickets, 23);
-
+  const [notificationPermission, setNotificationPermission] =useState("default");
   const [closedCount, setClosedCount] = useState(0);
   const [openCount, setOpenCount] = useState(0);
   const [resolvedCount, setResolvedCount] = useState(0);
@@ -26,30 +27,28 @@ function Home() {
 
   const [isModalOpen, setModalOpen] = useState(false);
 
-  const [selectedImageUrl, setSelectedImageUrl] = useState(null); // State to store selected image URL
+  const [selectedImageUrl, setSelectedImageUrl] = useState(null);
 
   const ticketUpdatesContainerRef = useRef(null);
 
   const [ticketupdateData, setTicketUpdateData] = useState([]);
-  const [chat, setChat] = useState([]);
 
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    socket.on("updatedTicketChat", (data) => {
-      const datares = data.TicketUpdates;
-      setChat((prevChat) => [...prevChat, datares]);
-    });
+  // useEffect(() => {
+  //   socket.on("updatedTicketChat", (data) => {
+  //     const datares = data.TicketUpdates;
+  //   });
 
-    // Assuming you have the ticketId available
-    if (selectedTicket) {
-      socket.emit("joinTicketRoom", selectedTicket.TicketID);
-    }
+  //   // Assuming you have the ticketId available
+  //   if (selectedTicket) {
+  //     socket.emit("joinTicketRoom", selectedTicket.TicketID);
+  //   }
 
-    return () => {
-      socket.off("updatedTicketChat");
-    };
-  }, [socket, selectedTicket]);
+  //   return () => {
+  //     socket.off("updatedTicketChat");
+  //   };
+  // }, [socket, selectedTicket]);
 
   const AssignedToSubDepartmentID = user.SubDepartmentID;
   useEffect(() => {
@@ -72,7 +71,8 @@ function Home() {
       ticketUpdatesContainerRef.current.scrollTop =
         ticketUpdatesContainerRef.current.scrollHeight;
     }
-  }, [selectedTicket, chat]);
+  }, [selectedTicket, ticketupdateData]);
+
   const handleImageClick = (url) => {
     setSelectedImageUrl(url);
     setModalOpen(true);
@@ -87,7 +87,7 @@ function Home() {
       (acc, ticket) => {
         if (ticket.Status === "Closed") {
           acc.closedCount++;
-        } else if (ticket.Status === "Open") {
+        } else if (ticket.Status === "Pending") {
           acc.openCount++;
         } else if (ticket.Status === "Resolve") {
           acc.resolvedCount++;
@@ -134,6 +134,54 @@ function Home() {
       TicketUpdateData(selectedTicket.TicketID);
     }
   }, [selectedTicket]);
+
+  useEffect(() => {
+    const socket = io("http://localhost:2000");
+
+    DTickets.forEach((ticket) => {
+      console.log(ticket.TicketID, 117);
+      socket.emit("joinTicketRoom", ticket.TicketID);
+    });
+    // socket.emit("ticketUpdate", {TicketUpdates: formData, TicketIDasRoomId: ticketData.TicketID});
+    // Listen for ticket updates
+    socket.on("updatedTicketChat", (data) => {
+      // Handle ticket update notification here
+      console.log(data.TicketUpdates, 124124);
+      dispatch(updateDtTicketUpdate(data.TicketUpdates));
+      setTicketUpdateData((prevChat) => [...prevChat, data.TicketUpdates]);
+
+      showNotification(data);
+    });
+
+    // Check for notification permission only once on component mount
+    if ("Notification" in window) {
+      Notification.requestPermission().then((permission) => {
+        setNotificationPermission(permission);
+      });
+    }
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [DTickets, socket]);
+
+  console.log(notificationPermission, 168)
+  const showNotification = (data) => {
+    console.log(data, 828282);
+    if (notificationPermission === "granted") {
+      const { TicketUpdates, TicketIDasRoomId } = data;
+      const notificationTitle = `Ticket Update`;
+      const notificationBody = `Ticket ${TicketIDasRoomId} has ${TicketUpdates.UpdateDescription} updates.`;
+      const notification = new Notification(notificationTitle, {
+        body: notificationBody,
+      });
+
+      notification.onclick = () => {
+        console.log("Notification clicked");
+        // Handle notification click event (e.g., navigate to ticket details)
+      };
+    }
+  };
 
   return (
     <div className="container mx-auto p-1 flex flex-col sm:flex-row text-sm">
@@ -209,7 +257,15 @@ function Home() {
                   <td>{ticket.Querycategory}</td>
                   <td>{ticket.QuerySubcategory}</td>
                   <td>{ticket.Employee.Location}</td>
-                  <td><p className="bg-red-400 text-center rounded-full">{ticket.TicketUpdates ? <>{ticket.TicketUpdates.length}</>: <>0</>}</p></td>
+                  <td>
+                    <p className="bg-red-400 text-center rounded-full">
+                      {ticket.TicketUpdates ? (
+                        <>{ticket.TicketUpdates.length}</>
+                      ) : (
+                        <>0</>
+                      )}
+                    </p>
+                  </td>
                   <td>{ticket.Employee.EmployeeName}</td>
                   <td>{ticket.Employee.Department.DepartmentName}</td>
                   <td>{ticket.TicketResTimeInMinutes}</td>
