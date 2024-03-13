@@ -3,6 +3,8 @@ import { Link, Outlet } from "react-router-dom";
 import io from "socket.io-client";
 import Reply from "./Reply";
 import { useDispatch, useSelector } from "react-redux";
+import addNotification from 'react-push-notification';
+
 import {
   getDepTicket,
   updateDeptTicket,
@@ -35,20 +37,6 @@ function Home() {
 
   const dispatch = useDispatch();
 
-  // useEffect(() => {
-  //   socket.on("updatedTicketChat", (data) => {
-  //     const datares = data.TicketUpdates;
-  //   });
-
-  //   // Assuming you have the ticketId available
-  //   if (selectedTicket) {
-  //     socket.emit("joinTicketRoom", selectedTicket.TicketID);
-  //   }
-
-  //   return () => {
-  //     socket.off("updatedTicketChat");
-  //   };
-  // }, [socket, selectedTicket]);
 
   const AssignedToSubDepartmentID = user.SubDepartmentID;
   useEffect(() => {
@@ -112,12 +100,10 @@ function Home() {
   };
 
   const TicketUpdateData = async (selectedTicket) => {
-    console.log(selectedTicket, 117);
     try {
       const TicketUpdates = await axios.get(
         `http://localhost:2000/Ticket-updates/${selectedTicket}`
       );
-      console.log(TicketUpdates.data, 116);
       if (TicketUpdates) {
         setTicketUpdateData(TicketUpdates.data);
       }
@@ -126,8 +112,6 @@ function Home() {
     }
   };
 
-  console.log(ticketupdateData, 119);
-  console.log(ticketupdateData.length, 123);
 
   useEffect(() => {
     if (selectedTicket) {
@@ -139,7 +123,6 @@ function Home() {
     const socket = io("http://localhost:2000");
 
     DTickets.forEach((ticket) => {
-      console.log(ticket.TicketID, 117);
       socket.emit("joinTicketRoom", ticket.TicketID);
     });
     // socket.emit("ticketUpdate", {TicketUpdates: formData, TicketIDasRoomId: ticketData.TicketID});
@@ -151,8 +134,15 @@ function Home() {
       setTicketUpdateData((prevChat) => [...prevChat, data.TicketUpdates]);
 
       showNotification(data);
+      addNotification({
+        title: 'Warning',
+        subtitle: 'This is a subtitle',
+        message: 'This is a very long message',
+        theme: 'darkblue',
+        native: true // when using native, your OS will handle theming.
     });
-
+    });
+   
     // Check for notification permission only once on component mount
     if ("Notification" in window) {
       Notification.requestPermission().then((permission) => {
@@ -166,11 +156,13 @@ function Home() {
   }, [DTickets, socket]);
 
   console.log(notificationPermission, 168)
+
   const showNotification = (data) => {
     console.log(data, 828282);
     if (notificationPermission === "granted") {
       const { TicketUpdates, TicketIDasRoomId } = data;
       const notificationTitle = `Ticket Update`;
+      console.log( `Ticket ${TicketIDasRoomId} has ${TicketUpdates.UpdateDescription} updates.`)
       const notificationBody = `Ticket ${TicketIDasRoomId} has ${TicketUpdates.UpdateDescription} updates.`;
       const notification = new Notification(notificationTitle, {
         body: notificationBody,

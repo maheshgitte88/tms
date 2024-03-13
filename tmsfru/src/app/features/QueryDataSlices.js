@@ -8,7 +8,6 @@ export const QueryCatSubHierarchyData = createAsyncThunk(
         try {
             const res = await axios.get(`http://localhost:2000/Query/get-query-hierarchy`);
             const resData = res.data;
-            console.log(resData, 11)
             return resData;
         } catch (error) {
             return rejectWithValue(error);

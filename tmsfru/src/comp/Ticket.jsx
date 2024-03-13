@@ -6,59 +6,30 @@ import io from "socket.io-client";
 import TicketForm from "./TicketForm";
 import { useDispatch, useSelector } from "react-redux";
 import { getEmployeeTicket, updateTicketUpdate } from "../app/features/EmpTicketsSlices";
+import addNotification from "react-push-notification";
 function Ticket() {
   const socket = useMemo(() => io("http://localhost:2000"), []);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const ticketUpdatesContainerRef = useRef(null);
   const [ticketupdateData, setTicketUpdateData] = useState([]);
   // const [chat, setChat] = useState([]);
-  const [notificationPermission, setNotificationPermission] =
-    useState("default");
+  const [notificationPermission, setNotificationPermission] = useState("default");
 
   const dispatch = useDispatch();
   const { ETickets, loading } = useSelector((state) => state.empTickets);
 
   const user = JSON.parse(localStorage.getItem("user"));
 
-  console.log(ETickets, 2020);
-  const [formData, setFormData] = useState({
-    TicketType: "Normal Ticket", // Default value from local storage
-    Status: "Open", // Initial status
-    Description: "",
-    LeadId: "",
-    AssignedToDepartmentID: 1, // Assigned department from local storage
-    AssignedToSubDepartmentID: 1, // Assigned sub department from local storage
-    // AssignedToDepartmentID:JSON.parse(localStorage.getItem("user")).DepartmentID, // Assigned department from local storage
-    // AssignedToSubDepartmentID:JSON.parse(localStorage.getItem("user")).SubDepartmentID,// Assigned sub department from local storage
-    files: null, // Change to null for initial state
-    EmployeeID: JSON.parse(localStorage.getItem("user")).EmployeeID, // EmployeeID from user object in local storage
-  });
-
-  // useEffect(() => {
-  //   socket.on("updatedTicketChat", (data) => {
-  //     const datares = data.TicketUpdates;
-  //     setChat((prevChat) => [...prevChat, datares]);
-  //   });
-  //   if (selectedTicket) {
-  //     socket.emit("joinTicketRoom", selectedTicket.TicketID);
-  //   }
-
-  //   return () => {
-  //     socket.off("updatedTicketChat");
-  //   };
-  // }, [socket, selectedTicket]);
 
   const handleTicketClick = async (ticket) => {
     setSelectedTicket(ticket);
   };
 
   const TicketUpdateData = async (selectedTicket) => {
-    console.log(selectedTicket, 117);
     try {
       const TicketUpdates = await axios.get(
         `http://localhost:2000/Ticket-updates/${selectedTicket}`
       );
-      console.log(TicketUpdates.data, 60);
       if (TicketUpdates) {
         setTicketUpdateData(TicketUpdates.data);
       }
@@ -67,8 +38,6 @@ function Ticket() {
     }
   };
 
-  console.log(ticketupdateData, 69);
-  console.log(ticketupdateData.length, 70);
 
   useEffect(() => {
     if (selectedTicket) {
@@ -114,19 +83,24 @@ function Ticket() {
     const socket = io("http://localhost:2000");
 
     ETickets.forEach((ticket) => {
-      console.log(ticket.TicketID, 117);
       socket.emit("joinTicketRoom", ticket.TicketID);
     });
     // socket.emit("ticketUpdate", {TicketUpdates: formData, TicketIDasRoomId: ticketData.TicketID});
     // Listen for ticket updates
     socket.on("updatedTicketChat", (data) => {
       // Handle ticket update notification here
-      console.log(data.TicketUpdates, 124124)
       dispatch(updateTicketUpdate(data.TicketUpdates));
       // setTicketUpdateData(TicketUpdates.data);
       setTicketUpdateData((prevChat) => [...prevChat, data.TicketUpdates]);
 
       showNotification(data);
+      addNotification({
+        title: 'Warning',
+        subtitle: 'This is a subtitle',
+        message: 'This is a very long message',
+        theme: 'darkblue',
+        native: true // when using native, your OS will handle theming.
+    });
     });
 
     // Check for notification permission
@@ -149,6 +123,7 @@ function Ticket() {
     if (notificationPermission === "granted") {
       const { TicketUpdates, TicketIDasRoomId } = data;
       const notificationTitle = `Ticket Update`;
+      console.log( `Ticket ${TicketIDasRoomId} has ${TicketUpdates.UpdateDescription} updates.`)
       const notificationBody = `Ticket ${TicketIDasRoomId} has ${TicketUpdates.UpdateDescription} updates.`;
       const notification = new Notification(notificationTitle, { body: notificationBody });
 

@@ -78,7 +78,6 @@ function TicketForm() {
     };
   });
 
-  console.log(filteredData, 43);
   const handleCategorySelect = (categoryName) => {
     setFormData({
       ...formData,
@@ -111,7 +110,6 @@ function TicketForm() {
       const updatedAttachmentUrls = await getAttachmentUrls(
         formData.AttachmentUrl
       );
-      console.log(updatedAttachmentUrls, 91);
       setFormData((prevFormData) => ({
         ...prevFormData,
         AttachmentUrl: updatedAttachmentUrls,
@@ -144,7 +142,6 @@ function TicketForm() {
               },
             }
           );
-          console.log(response, 145);
           urls.push(response.data.data);
         }
         return urls;
@@ -161,7 +158,6 @@ function TicketForm() {
     dispatch(QueryCatSubHierarchyData());
     populateDepartments(QueryCatSubHierarchy);
   }, [showForm]);
-  console.log(QueryCatSubHierarchy, 167);
   const populateDepartments = (QueryCatSubHierarchy) => {
     if (QueryCatSubHierarchy && QueryCatSubHierarchy.length > 0) {
       const departmentOptions = QueryCatSubHierarchy.map((dep) => (

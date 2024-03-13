@@ -38,8 +38,8 @@ const Reply = ({ ticketData }) => {
     }
   }, [ticketData]);
 
-  console.log("ticketData", ticketData);
-  console.log("formData", formData);
+  // console.log("ticketData", ticketData);
+  // console.log("formData", formData);
 
   const handleChange = (e) => {
     setFormData({
