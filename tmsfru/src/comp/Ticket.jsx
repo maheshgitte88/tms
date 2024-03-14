@@ -5,21 +5,39 @@ import Reply from "./Reply";
 import io from "socket.io-client";
 import TicketForm from "./TicketForm";
 import { useDispatch, useSelector } from "react-redux";
-import { getEmployeeTicket, updateTicketUpdate } from "../app/features/EmpTicketsSlices";
-import addNotification from "react-push-notification";
+import {
+  getEmployeeTicket,
+  updateTicketUpdate,
+} from "../app/features/EmpTicketsSlices";
+async function notifyUser(
+  notificationText = "Thanks you for enabling notifications"
+) {
+  if (!(Notification in window)) {
+    alert("browser not support notications");
+  } else if (Notification.permission === "granted") {
+    const notification = new Notification(notificationText);
+  } else if (Notification.permission !== "denied") {
+    await Notification.requestPermission().then((permission) => {
+      if (permission === "granted") {
+        const notification = new Notification(notificationText);
+      }
+      // setNotificationPermission(permission);
+    });
+  }
+}
 function Ticket() {
   const socket = useMemo(() => io("http://localhost:2000"), []);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const ticketUpdatesContainerRef = useRef(null);
   const [ticketupdateData, setTicketUpdateData] = useState([]);
-  // const [chat, setChat] = useState([]);
-  const [notificationPermission, setNotificationPermission] = useState("default");
+  const [userResponce, setUserResponce] = useState(false);
+  const [notificationPermission, setNotificationPermission] =
+    useState("default");
 
   const dispatch = useDispatch();
   const { ETickets, loading } = useSelector((state) => state.empTickets);
 
   const user = JSON.parse(localStorage.getItem("user"));
-
 
   const handleTicketClick = async (ticket) => {
     setSelectedTicket(ticket);
@@ -38,19 +56,18 @@ function Ticket() {
     }
   };
 
-
   useEffect(() => {
     if (selectedTicket) {
       TicketUpdateData(selectedTicket.TicketID);
     }
-  }, [selectedTicket, ]);
+  }, [selectedTicket]);
 
   useEffect(() => {
     if (ticketUpdatesContainerRef.current) {
       ticketUpdatesContainerRef.current.scrollTop =
         ticketUpdatesContainerRef.current.scrollHeight;
     }
-  }, [selectedTicket, ticketupdateData ]);
+  }, [selectedTicket, ticketupdateData]);
 
   // useEffect(() => {
   //   // Count tickets based on their status
@@ -94,38 +111,38 @@ function Ticket() {
       setTicketUpdateData((prevChat) => [...prevChat, data.TicketUpdates]);
 
       showNotification(data);
-      addNotification({
-        title: 'Warning',
-        subtitle: 'This is a subtitle',
-        message: 'This is a very long message',
-        theme: 'darkblue',
-        native: true // when using native, your OS will handle theming.
-    });
     });
 
     // Check for notification permission
-    if ("Notification" in window) {
-      Notification.requestPermission().then((permission) => {
-        setNotificationPermission(permission);
-      });
-    }
 
     return () => {
       socket.disconnect();
     };
   }, [ETickets, socket]);
 
-  console.log(notificationPermission, 144)
+  console.log(notificationPermission, 144);
 
   // Function to show notification
-  const showNotification = (data) => {
+  const showNotification = async (data) => {
+    if ("Notification" in window) {
+      await Notification.requestPermission().then((permission) => {
+        setNotificationPermission(permission);
+      });
+    } else {
+      console.log("browser does not support notifications");
+    }
+
     console.log(data, 828282);
     if (notificationPermission === "granted") {
       const { TicketUpdates, TicketIDasRoomId } = data;
       const notificationTitle = `Ticket Update`;
-      console.log( `Ticket ${TicketIDasRoomId} has ${TicketUpdates.UpdateDescription} updates.`)
+      console.log(
+        `Ticket ${TicketIDasRoomId} has ${TicketUpdates.UpdateDescription} updates.`
+      );
       const notificationBody = `Ticket ${TicketIDasRoomId} has ${TicketUpdates.UpdateDescription} updates.`;
-      const notification = new Notification(notificationTitle, { body: notificationBody });
+      const notification = new Notification(notificationTitle, {
+        body: notificationBody,
+      });
 
       notification.onclick = () => {
         console.log("Notification clicked");
@@ -134,6 +151,54 @@ function Ticket() {
     }
   };
 
+  // function notifyUser(notificationText = "Thanks you for enabling notifications"){
+  //   if (!(Notification in window)) {
+  //     alert("browser not support notications");
+  //   } else if (Notification.permission === "granted") {
+  //     const notification = new Notification(notificationText);
+  //   } else if (Notification.permission !== "denied") {
+  //     Notification.requestPermission().then((permission) => {
+  //       if (permission === "granted") {
+  //         const notification = new Notification(notificationText);
+  //       }
+  //       // setNotificationPermission(permission);
+  //     });
+  //   }
+  // }
+
+  async function enabledNotifictions() {
+    await notifyUser().then(() => {
+      setUserResponce(true);
+    });
+  }
+
+
+
+
+  // return !userResponce && !(Notification.permission === "granted") ? (
+  //   <div className="p-5 bg-red-600"  role="alert">
+  //     <div className="bg-red-500 text-white font-bold rounded-t px-4 py-2">
+  //       <div>
+  //         <div className="border border-t-0 border-red-400 rounded-b bg-red-100 px-4 py-3 text-red-700">
+  //           <div>would you like to enable notifiction</div>
+  //           <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={enabledNotifictions}>Sure !</button>
+  //           <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={desebleedNotifictions}>No Thanks !</button>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   </div>
+  // ) : Notification.permission === "granted" ? (
+  //   <div>
+  //     <button className="bg-teal-600" onClick={ () => notifyUser("Thank's For Yousing TMS")}></button>
+  //   </div>
+  // ) : (
+  //   <>
+  //     <h1>You have disabled notifications</h1>
+  //   </>
+  // );
+   function desebleedNotifictions() {
+    setUserResponce(true);
+  }
   return (
     <>
       <div className="container mx-auto p-1 flex flex-col sm:flex-row text-sm">

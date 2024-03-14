@@ -3,7 +3,7 @@ import { Link, Outlet } from "react-router-dom";
 import io from "socket.io-client";
 import Reply from "./Reply";
 import { useDispatch, useSelector } from "react-redux";
-import addNotification from 'react-push-notification';
+// import addNotification from 'react-push-notification';
 
 import {
   getDepTicket,
@@ -12,6 +12,25 @@ import {
   updateTicket,
 } from "../app/features/DepTicketsSlices";
 import axios from "axios";
+import Nitifications from "../Context/Nitifications";
+
+function notifyUser(
+  notificationText = "Thanks you for enabling notifications"
+) {
+  if (!(Notification in window)) {
+    alert("browser not support notications");
+  } else if (Notification.permission === "granted") {
+    const notification = new Notification(notificationText);
+  } else if (Notification.permission !== "denied") {
+    Notification.requestPermission().then((permission) => {
+      if (permission === "granted") {
+        const notification = new Notification(notificationText);
+      }
+      // setNotificationPermission(permission);
+    });
+  }
+}
+
 function Home() {
   // const socket = io.connect("http://localhost:2000");
   const user = JSON.parse(localStorage.getItem("user"));
@@ -20,7 +39,8 @@ function Home() {
 
   const { DTickets, loading } = useSelector((state) => state.app);
   console.log(DTickets, 23);
-  const [notificationPermission, setNotificationPermission] =useState("default");
+  const [notificationPermission, setNotificationPermission] =
+    useState("default");
   const [closedCount, setClosedCount] = useState(0);
   const [openCount, setOpenCount] = useState(0);
   const [resolvedCount, setResolvedCount] = useState(0);
@@ -36,7 +56,6 @@ function Home() {
   const [ticketupdateData, setTicketUpdateData] = useState([]);
 
   const dispatch = useDispatch();
-
 
   const AssignedToSubDepartmentID = user.SubDepartmentID;
   useEffect(() => {
@@ -112,7 +131,6 @@ function Home() {
     }
   };
 
-
   useEffect(() => {
     if (selectedTicket) {
       TicketUpdateData(selectedTicket.TicketID);
@@ -134,15 +152,15 @@ function Home() {
       setTicketUpdateData((prevChat) => [...prevChat, data.TicketUpdates]);
 
       showNotification(data);
-      addNotification({
-        title: 'Warning',
-        subtitle: 'This is a subtitle',
-        message: 'This is a very long message',
-        theme: 'darkblue',
-        native: true // when using native, your OS will handle theming.
+      //   addNotification({
+      //     title: 'Warning',
+      //     subtitle: 'This is a subtitle',
+      //     message: 'This is a very long message',
+      //     theme: 'darkblue',
+      //     native: true // when using native, your OS will handle theming.
+      // });
     });
-    });
-   
+
     // Check for notification permission only once on component mount
     if ("Notification" in window) {
       Notification.requestPermission().then((permission) => {
@@ -155,14 +173,21 @@ function Home() {
     };
   }, [DTickets, socket]);
 
-  console.log(notificationPermission, 168)
+  console.log(notificationPermission, 168);
 
-  const showNotification = (data) => {
+  const showNotification = async (data) => {
+    if ("Notification" in window) {
+      await Notification.requestPermission().then((permission) => {
+        setNotificationPermission(permission);
+      });
+    }
     console.log(data, 828282);
     if (notificationPermission === "granted") {
       const { TicketUpdates, TicketIDasRoomId } = data;
       const notificationTitle = `Ticket Update`;
-      console.log( `Ticket ${TicketIDasRoomId} has ${TicketUpdates.UpdateDescription} updates.`)
+      console.log(
+        `Ticket ${TicketIDasRoomId} has ${TicketUpdates.UpdateDescription} updates.`
+      );
       const notificationBody = `Ticket ${TicketIDasRoomId} has ${TicketUpdates.UpdateDescription} updates.`;
       const notification = new Notification(notificationTitle, {
         body: notificationBody,
@@ -199,7 +224,7 @@ function Home() {
           </div>
         </div>
         <Outlet></Outlet>
-
+<Nitifications />
         {isModalOpen && (
           <div className="modal-overlay" onClick={handleCloseModal}>
             <div className="modal-content">
