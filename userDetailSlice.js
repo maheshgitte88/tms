@@ -413,3 +413,69 @@ io.on("connection", (socket) => {
   updatedAt: 2024-03-09T19:53:03.612Z,
   createdAt: 2024-03-09T19:53:03.612Z
 } 112
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import React, { useCallback, useEffect, useState } from "react";
+import log from "./logo.png";
+
+function Nitificatins() {
+  const sendNotification = () => {
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification("Hello Team From IT ..! ", {
+        body: "notification msg to you...!",
+        icon: "logo",
+      });
+    }
+  };
+
+  const requestNotificationPermission = useCallback(() => {
+    if ("Notification" in window) {
+      Notification.requestPermission().then(function (permission) {
+        if (permission === "granted") {
+          console.log(" Notification Permission Granted..!");
+          sendNotification();
+        }
+      });
+    }
+  });
+
+  useEffect(() => {
+    if ("Notification" in window) {
+      requestNotificationPermission();
+    }
+  }, [requestNotificationPermission]);
+
+  return (
+    <>
+      <div>
+        <button
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          onClick={sendNotification}
+        >
+          Click To Notify
+        </button>
+      </div>
+    </>
+  );
+}
+
+export default Nitificatins;

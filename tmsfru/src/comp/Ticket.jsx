@@ -9,22 +9,9 @@ import {
   getEmployeeTicket,
   updateTicketUpdate,
 } from "../app/features/EmpTicketsSlices";
-async function notifyUser(
-  notificationText = "Thanks you for enabling notifications"
-) {
-  if (!(Notification in window)) {
-    alert("browser not support notications");
-  } else if (Notification.permission === "granted") {
-    const notification = new Notification(notificationText);
-  } else if (Notification.permission !== "denied") {
-    await Notification.requestPermission().then((permission) => {
-      if (permission === "granted") {
-        const notification = new Notification(notificationText);
-      }
-      // setNotificationPermission(permission);
-    });
-  }
-}
+import logo from "../Context/logo.png";
+
+
 function Ticket() {
   const socket = useMemo(() => io("http://localhost:2000"), []);
   const [selectedTicket, setSelectedTicket] = useState(null);
@@ -109,8 +96,13 @@ function Ticket() {
       dispatch(updateTicketUpdate(data.TicketUpdates));
       // setTicketUpdateData(TicketUpdates.data);
       setTicketUpdateData((prevChat) => [...prevChat, data.TicketUpdates]);
+      console.log(data.TicketUpdates, 97);
+      console.log(data.TicketUpdates.EmployeeID, user.EmployeeID, 98);
 
-      showNotification(data);
+      if (data.TicketUpdates.EmployeeID !== user.EmployeeID) {
+        showNotification(data);
+      }
+      // showNotification(data);
     });
 
     // Check for notification permission
@@ -139,66 +131,21 @@ function Ticket() {
       console.log(
         `Ticket ${TicketIDasRoomId} has ${TicketUpdates.UpdateDescription} updates.`
       );
-      const notificationBody = `Ticket ${TicketIDasRoomId} has ${TicketUpdates.UpdateDescription} updates.`;
+      const notificationBody = `Ticket ${TicketIDasRoomId} has ${TicketUpdates.UpdateDescription} updates From ${TicketUpdates.EmployeeID}.`;
       const notification = new Notification(notificationTitle, {
         body: notificationBody,
+        icon: `${logo}`,
       });
 
       notification.onclick = () => {
         console.log("Notification clicked");
         // Handle notification click event (e.g., navigate to ticket details)
+        const ticketDetailsURL = `http://localhost:5173/user/dashboard/Ticket`; // Assuming the URL path structure
+        window.location.href = ticketDetailsURL;
       };
     }
   };
 
-  // function notifyUser(notificationText = "Thanks you for enabling notifications"){
-  //   if (!(Notification in window)) {
-  //     alert("browser not support notications");
-  //   } else if (Notification.permission === "granted") {
-  //     const notification = new Notification(notificationText);
-  //   } else if (Notification.permission !== "denied") {
-  //     Notification.requestPermission().then((permission) => {
-  //       if (permission === "granted") {
-  //         const notification = new Notification(notificationText);
-  //       }
-  //       // setNotificationPermission(permission);
-  //     });
-  //   }
-  // }
-
-  async function enabledNotifictions() {
-    await notifyUser().then(() => {
-      setUserResponce(true);
-    });
-  }
-
-
-
-
-  // return !userResponce && !(Notification.permission === "granted") ? (
-  //   <div className="p-5 bg-red-600"  role="alert">
-  //     <div className="bg-red-500 text-white font-bold rounded-t px-4 py-2">
-  //       <div>
-  //         <div className="border border-t-0 border-red-400 rounded-b bg-red-100 px-4 py-3 text-red-700">
-  //           <div>would you like to enable notifiction</div>
-  //           <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={enabledNotifictions}>Sure !</button>
-  //           <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={desebleedNotifictions}>No Thanks !</button>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   </div>
-  // ) : Notification.permission === "granted" ? (
-  //   <div>
-  //     <button className="bg-teal-600" onClick={ () => notifyUser("Thank's For Yousing TMS")}></button>
-  //   </div>
-  // ) : (
-  //   <>
-  //     <h1>You have disabled notifications</h1>
-  //   </>
-  // );
-   function desebleedNotifictions() {
-    setUserResponce(true);
-  }
   return (
     <>
       <div className="container mx-auto p-1 flex flex-col sm:flex-row text-sm">
