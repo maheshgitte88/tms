@@ -4,6 +4,7 @@ const express = require('express');
 const router = express.Router();
 const cloudinary = require('cloudinary').v2;
 const Ticket = require('../models/Ticket');
+const TicketResolution = require('../models/TicketResolution');
 
 cloudinary.config({
   cloud_name: 'dtgpxvmpl',
@@ -64,6 +65,59 @@ router.post('/Create', async (req, res) => {
   } catch (error) {
     console.error('Error creating ticket:', error);
     res.status(500).json({ response: "error", message: "Internal Server Error", status: 500 });
+  }
+});
+
+router.put('/resolution/:ticketId', async (req, res) => {
+  const TicketId = req.params.ticketId;
+  const UpdateStatus= req.query.resolved
+  const {UpdateDescription, EmployeeID, Feedback } = req.body;
+  console.log(req.body,   7474 )
+
+console.log(TicketId, UpdateStatus, UpdateDescription, EmployeeID, Feedback,   7474 )
+  try {
+    // Find the ticket by ID
+    const ticket = await Ticket.findByPk(TicketId);
+
+    if (!ticket) {
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+
+    // Update ticket fields
+    await ticket.update({
+      Status: UpdateStatus,
+      ResolutionDescription: UpdateDescription,
+      // ResEmployeeID,
+      ResolutionFeedback: Feedback
+    });
+
+    let ticketResolution = await TicketResolution.findOne({ where: { TicketId: TicketId } });
+
+    if (!ticketResolution) {
+      // If ticket resolution doesn't exist, create a new one
+      ticketResolution = await TicketResolution.create({
+        TicketId: TicketId,
+        ResEmployeeID : EmployeeID,
+        ResolutionDescription: UpdateDescription
+      });
+    } else {
+      // If ticket resolution exists, update its fields
+      await ticketResolution.update({
+        ResEmployeeID: EmployeeID,
+        ResolutionDescription: UpdateDescription
+      });
+    }
+
+    // Update Ticket with ResEmployeeID
+    // const ticket = await Ticket.findByPk(ticketId);
+    // if (ticket) {
+    //   await ticket.update({ ResEmployeeID });
+    // }
+
+    res.json({ message: 'Ticket updated successfully' });
+  } catch (error) {
+    console.error('Error updating ticket:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

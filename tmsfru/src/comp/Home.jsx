@@ -13,24 +13,6 @@ import {
   updateTicket,
 } from "../app/features/DepTicketsSlices";
 import axios from "axios";
-// import Nitifications from "../Context/Nitifications";
-
-function notifyUser(
-  notificationText = "Thanks you for enabling notifications"
-) {
-  if (!(Notification in window)) {
-    alert("browser not support notications");
-  } else if (Notification.permission === "granted") {
-    const notification = new Notification(notificationText);
-  } else if (Notification.permission !== "denied") {
-    Notification.requestPermission().then((permission) => {
-      if (permission === "granted") {
-        const notification = new Notification(notificationText);
-      }
-      // setNotificationPermission(permission);
-    });
-  }
-}
 
 function Home() {
   // const socket = io.connect("http://localhost:2000");
@@ -39,7 +21,6 @@ function Home() {
   const socket = useMemo(() => io("http://localhost:2000"), []);
 
   const { DTickets, loading } = useSelector((state) => state.app);
-  console.log(DTickets, 23);
   const [notificationPermission, setNotificationPermission] =
     useState("default");
   const [closedCount, setClosedCount] = useState(0);
@@ -64,14 +45,9 @@ function Home() {
       dispatch(updateDeptTicket(data));
     });
 
-    // Assuming you have the ticketId available
     if (AssignedToSubDepartmentID) {
       socket.emit("joinDepaTicketRoom", AssignedToSubDepartmentID);
     }
-
-    // return () => {
-    //   socket.off("updatedDeptTicketChat");
-    // };
   }, [socket]);
 
   useEffect(() => {
@@ -113,7 +89,7 @@ function Home() {
     const dpId = user.DepartmentID;
     const SubDapId = user.SubDepartmentID;
     dispatch(getDepTicket({ departmentId: dpId, SubDepartmentId: SubDapId }));
-  }, []);
+  }, [selectedTicket]);
 
   const handleTicketClick = async (ticket) => {
     setSelectedTicket(ticket);
@@ -135,6 +111,7 @@ function Home() {
   useEffect(() => {
     if (selectedTicket) {
       TicketUpdateData(selectedTicket.TicketID);
+      socket.emit("joinTicketRoom", selectedTicket.TicketID);
     }
   }, [selectedTicket]);
 
@@ -167,8 +144,7 @@ function Home() {
     return () => {
       socket.disconnect();
     };
-  }, [DTickets, socket]);
-
+  }, [socket, selectedTicket, DTickets]);
 
   const showNotification = async (data) => {
     if ("Notification" in window) {
@@ -194,7 +170,6 @@ function Home() {
         // Handle notification click event (e.g., navigate to ticket details)
         const ticketDetailsURL = `http://localhost:5173/user/dashboard/Home`; // Assuming the URL path structure
         window.location.href = ticketDetailsURL;
-  
       };
     }
   };

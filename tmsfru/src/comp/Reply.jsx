@@ -19,9 +19,10 @@ const Reply = ({ ticketData }) => {
     EmployeeID: JSON.parse(localStorage.getItem("user")).EmployeeID,
     SubDepartmentID: JSON.parse(localStorage.getItem("user")).SubDepartmentID,
     Feedback: "",
-    UpdateStatus: "Resolve",
+    UpdateStatus: "",
     files: null,
   });
+
 
   useEffect(() => {
     if (ticketData) {
@@ -30,9 +31,10 @@ const Reply = ({ ticketData }) => {
         UpdateDescription: "",
         DepartmentID: JSON.parse(localStorage.getItem("user")).DepartmentID,
         EmployeeID: JSON.parse(localStorage.getItem("user")).EmployeeID,
-        SubDepartmentID: JSON.parse(localStorage.getItem("user")).SubDepartmentID,
+        SubDepartmentID: JSON.parse(localStorage.getItem("user"))
+          .SubDepartmentID,
         Feedback: "",
-        UpdateStatus: "Resolve",
+        UpdateStatus: "",
         files: null,
       });
     }
@@ -77,7 +79,10 @@ const Reply = ({ ticketData }) => {
           "http://localhost:2000/api/ticket-updates",
           formDataToSend
         );
-        socket.emit("ticketUpdate", {TicketUpdates: formData, TicketIDasRoomId: ticketData.TicketID});
+        socket.emit("ticketUpdate", {
+          TicketUpdates: formData,
+          TicketIDasRoomId: ticketData.TicketID,
+        });
         // socket.emit('ticketUpdate', {TicketUpdates: formData, TicketIDasRoomId:ticketData.TicketID })
         setFormData({
           TicketId: ticketData?.TicketID || "",
@@ -86,7 +91,7 @@ const Reply = ({ ticketData }) => {
           EmployeeID: JSON.parse(localStorage.getItem("user")).EmployeeID,
           SubDepartmentID: JSON.parse(localStorage.getItem("user")).SubDepartmentID,
           Feedback: "",
-          UpdateStatus: "",
+          UpdateStatus: ticketData?.Status,
           files: null,
         });
         console.log("Response:", response.data);
@@ -104,11 +109,16 @@ const Reply = ({ ticketData }) => {
       );
     }
   };
-  const handleStatusUpdate = (status) => {
-    setFormData({
-      ...formData,
-      UpdateStatus: status,
-    });
+  const handleStatusUpdate = async () => {
+    try {
+      const response = await axios.put(
+        `http://localhost:2000/Ticket/resolution/${ticketData?.TicketID}?resolved=Resolved`,
+        formData
+      );
+      console.log(response.data, 123);
+    } catch (error) {
+      console.log(error, 125);
+    }
   };
 
   return (
@@ -156,7 +166,7 @@ const Reply = ({ ticketData }) => {
         </div>
 
         <div className="flex justify-between">
-          <div>
+          {/* <div>
             <button
               onClick={() => handleStatusUpdate("Resolved")}
               className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
@@ -169,7 +179,7 @@ const Reply = ({ ticketData }) => {
             >
               Close
             </button>
-          </div>
+          </div> */}
 
           <div>
             {formData.UpdateDescription || formData.files ? (
@@ -183,6 +193,23 @@ const Reply = ({ ticketData }) => {
           </div>
         </div>
       </form>
+
+      <div className="flex justify-between">
+        <div>
+          <button
+            onClick={handleStatusUpdate}
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+          >
+            Resolve
+          </button>
+          <button
+            onClick={() => handleStatusUpdate("Closed")}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 ml-2"
+          >
+            Close
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

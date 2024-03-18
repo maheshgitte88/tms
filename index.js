@@ -81,9 +81,11 @@ io.on("connection", (socket) => {
 
   socket.on("createTicket", async (data) => {
     const TicketData = data.createTicket;
+    console.log(TicketData,84)
     try {
       const result = await createTicketAndNotify(TicketData);
-      console.log(result.ticket, 86)
+      // console.log(result.ticket, 86)
+      console.log(data.AssigSubDepId, 87)
       io.to(data.AssigSubDepId).emit("updatedDeptTicketChat", result.ticket);
     } catch (error) {
       console.error(error);
@@ -173,7 +175,7 @@ console.log(tickets, 157)
       Department: tickets.Department.dataValues,
       TicketUpdate:tickets.TicketUpdate
     };
-console.log(ticketValues,176)
+// console.log(ticketValues,176)
     return {
       success: true,
       message: "Ticket created successfully",

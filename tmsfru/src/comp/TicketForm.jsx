@@ -56,13 +56,14 @@ function TicketForm() {
       socket.emit("joinDepaTicketRoom", formData.AssignedToSubDepartmentID);
     }
     if (ticketAsgSubDepId) {
+      console.log("romm joined for form", ticketAsgSubDepId)
       socket.emit("joinDepaTicketRoom", ticketAsgSubDepId);
     }
 
     // return () => {
     //   socket.off("updatedTicketChat");
     // };
-  }, [socket, ticketAsgSubDepId, formData.AssignedToSubDepartmentID]);
+  }, [socket]);
 
   // const filteredData = QueryCatSubHierarchy.filter((e) => e.DepartmentName === "IT");
   const filteredData = QueryCatSubHierarchy.filter(
@@ -158,6 +159,7 @@ function TicketForm() {
     dispatch(QueryCatSubHierarchyData());
     populateDepartments(QueryCatSubHierarchy);
   }, [showForm]);
+
   const populateDepartments = (QueryCatSubHierarchy) => {
     if (QueryCatSubHierarchy && QueryCatSubHierarchy.length > 0) {
       const departmentOptions = QueryCatSubHierarchy.map((dep) => (
@@ -266,6 +268,7 @@ function TicketForm() {
         AttachmentUrl: updatedAttachmentUrls, // Send file URLs instead of actual files
         EmployeeID: JSON.parse(localStorage.getItem("user")).EmployeeID,
       };
+      console.log(ticketAsgSubDepId, 270)
       socket.emit("createTicket", {
         createTicket: formDataToSend,
         AssigSubDepId: ticketAsgSubDepId,

@@ -11,15 +11,12 @@ import {
 } from "../app/features/EmpTicketsSlices";
 import logo from "../Context/logo.png";
 
-
 function Ticket() {
   const socket = useMemo(() => io("http://localhost:2000"), []);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const ticketUpdatesContainerRef = useRef(null);
   const [ticketupdateData, setTicketUpdateData] = useState([]);
-  const [userResponce, setUserResponce] = useState(false);
-  const [notificationPermission, setNotificationPermission] =
-    useState("default");
+  const [notificationPermission, setNotificationPermission] =useState("default");
 
   const dispatch = useDispatch();
   const { ETickets, loading } = useSelector((state) => state.empTickets);
@@ -46,6 +43,7 @@ function Ticket() {
   useEffect(() => {
     if (selectedTicket) {
       TicketUpdateData(selectedTicket.TicketID);
+      socket.emit("joinTicketRoom", selectedTicket.TicketID);
     }
   }, [selectedTicket]);
 
@@ -81,7 +79,7 @@ function Ticket() {
       const EmpId = user.EmployeeID;
       dispatch(getEmployeeTicket(EmpId));
     }
-  }, []);
+  }, [selectedTicket]);
 
   useEffect(() => {
     const socket = io("http://localhost:2000");
@@ -110,9 +108,7 @@ function Ticket() {
     return () => {
       socket.disconnect();
     };
-  }, [ETickets, socket]);
-
-  console.log(notificationPermission, 144);
+  }, [ETickets, selectedTicket, socket]);
 
   // Function to show notification
   const showNotification = async (data) => {
@@ -124,7 +120,6 @@ function Ticket() {
       console.log("browser does not support notifications");
     }
 
-    console.log(data, 828282);
     if (notificationPermission === "granted") {
       const { TicketUpdates, TicketIDasRoomId } = data;
       const notificationTitle = `Ticket Update`;
