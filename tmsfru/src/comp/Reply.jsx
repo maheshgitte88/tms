@@ -3,6 +3,7 @@ import axios from "axios";
 // import socket from "../socket";
 
 import io from "socket.io-client";
+import StarRating from "./StarRating";
 
 // const socket = io.connect("http://localhost:2000");
 
@@ -18,11 +19,10 @@ const Reply = ({ ticketData }) => {
     DepartmentID: JSON.parse(localStorage.getItem("user")).DepartmentID,
     EmployeeID: JSON.parse(localStorage.getItem("user")).EmployeeID,
     SubDepartmentID: JSON.parse(localStorage.getItem("user")).SubDepartmentID,
-    Feedback: "",
+    Feedback: 0,
     UpdateStatus: "",
     files: null,
   });
-
 
   useEffect(() => {
     if (ticketData) {
@@ -33,7 +33,7 @@ const Reply = ({ ticketData }) => {
         EmployeeID: JSON.parse(localStorage.getItem("user")).EmployeeID,
         SubDepartmentID: JSON.parse(localStorage.getItem("user"))
           .SubDepartmentID,
-        Feedback: "",
+        Feedback: 0,
         UpdateStatus: "",
         files: null,
       });
@@ -89,8 +89,9 @@ const Reply = ({ ticketData }) => {
           UpdateDescription: "",
           DepartmentID: JSON.parse(localStorage.getItem("user")).DepartmentID,
           EmployeeID: JSON.parse(localStorage.getItem("user")).EmployeeID,
-          SubDepartmentID: JSON.parse(localStorage.getItem("user")).SubDepartmentID,
-          Feedback: "",
+          SubDepartmentID: JSON.parse(localStorage.getItem("user"))
+            .SubDepartmentID,
+          Feedback: 0,
           UpdateStatus: ticketData?.Status,
           files: null,
         });
@@ -109,6 +110,7 @@ const Reply = ({ ticketData }) => {
       );
     }
   };
+
   const handleStatusUpdate = async () => {
     try {
       const response = await axios.put(
@@ -119,6 +121,25 @@ const Reply = ({ ticketData }) => {
     } catch (error) {
       console.log(error, 125);
     }
+  };
+
+  const handleStatusUpdateClosed = async () => {
+    try {
+      const response = await axios.put(
+        `http://localhost:2000/Ticket/Closed/${ticketData?.TicketID}?Closed=Closed`,
+        formData
+      );
+      console.log(response.data, 123);
+    } catch (error) {
+      console.log(error, 125);
+    }
+  };
+
+  const handleFeedbackChange = (newRating) => {
+    setFormData(prevState => ({
+      ...prevState,
+      Feedback: newRating,
+    }));
   };
 
   return (
@@ -164,23 +185,11 @@ const Reply = ({ ticketData }) => {
             className="pl-10 pr-10 py-4 w-full border rounded-md"
           />
         </div>
+        <div>
+        <StarRating value={formData.Feedback} onChange={handleFeedbackChange} />
+        </div>
 
         <div className="flex justify-between">
-          {/* <div>
-            <button
-              onClick={() => handleStatusUpdate("Resolved")}
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-            >
-              Resolve
-            </button>
-            <button
-              onClick={() => handleStatusUpdate("Closed")}
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 ml-2"
-            >
-              Close
-            </button>
-          </div> */}
-
           <div>
             {formData.UpdateDescription || formData.files ? (
               <button
@@ -203,7 +212,7 @@ const Reply = ({ ticketData }) => {
             Resolve
           </button>
           <button
-            onClick={() => handleStatusUpdate("Closed")}
+            onClick={handleStatusUpdateClosed}
             className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 ml-2"
           >
             Close

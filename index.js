@@ -228,7 +228,7 @@ app.get("/department/:departmentId/:SubDepartmentId", async (req, res) => {
     }
     const tickets = await Ticket.findAll({
       where: {
-        AssignedToSubDepartmentID: departmentId,
+        // AssignedToSubDepartmentID: departmentId,
         AssignedToSubDepartmentID: SubDepartmentId,
       },
       include: [

@@ -29,6 +29,7 @@ cloudinary.config({
 // });
 
 
+
 router.post('/Create', async (req, res) => {
   const { TicketType, LeadId, Status, Description, StudentId,
     EmployeeID, AssignedToDepartmentID, AssignedToSubDepartmentID,
@@ -40,13 +41,13 @@ router.post('/Create', async (req, res) => {
     if (req.files && req.files.length > 0) {
       // Upload each file to Cloudinary
       for (const file of req.files) {
-          const result = await cloudinary.uploader.upload(file.path, {
-              folder: 'ticket-updates', // Set the Cloudinary folder name
-          });
-          console.log(result, 246);
-          updatedAttachmentUrls.push(result.secure_url);
+        const result = await cloudinary.uploader.upload(file.path, {
+          folder: 'ticket-updates', // Set the Cloudinary folder name
+        });
+        console.log(result, 246);
+        updatedAttachmentUrls.push(result.secure_url);
       }
-  }
+    }
 
     const ticket = await Ticket.create({
       TicketType,
@@ -68,13 +69,15 @@ router.post('/Create', async (req, res) => {
   }
 });
 
+
+
 router.put('/resolution/:ticketId', async (req, res) => {
   const TicketId = req.params.ticketId;
-  const UpdateStatus= req.query.resolved
-  const {UpdateDescription, EmployeeID, Feedback } = req.body;
-  console.log(req.body,   7474 )
+  const UpdateStatus = req.query.resolved
+  const { UpdateDescription, EmployeeID, Feedback } = req.body;
+  console.log(req.body, 7474)
 
-console.log(TicketId, UpdateStatus, UpdateDescription, EmployeeID, Feedback,   7474 )
+  console.log(TicketId, UpdateStatus, UpdateDescription, EmployeeID, Feedback, 7474)
   try {
     // Find the ticket by ID
     const ticket = await Ticket.findByPk(TicketId);
@@ -97,7 +100,7 @@ console.log(TicketId, UpdateStatus, UpdateDescription, EmployeeID, Feedback,   7
       // If ticket resolution doesn't exist, create a new one
       ticketResolution = await TicketResolution.create({
         TicketId: TicketId,
-        ResEmployeeID : EmployeeID,
+        ResEmployeeID: EmployeeID,
         ResolutionDescription: UpdateDescription
       });
     } else {
@@ -121,6 +124,34 @@ console.log(TicketId, UpdateStatus, UpdateDescription, EmployeeID, Feedback,   7
   }
 });
 
+router.put('/Closed/:ticketId', async (req, res) => {
+  const TicketId = req.params.ticketId;
+  const UpdateStatus = req.query.Closed
+  const { UpdateDescription, Feedback } = req.body;
+
+  console.log(TicketId, UpdateStatus, UpdateDescription, Feedback, 7474)
+  try {
+    // Find the ticket by ID
+    const ticket = await Ticket.findByPk(TicketId);
+
+    if (!ticket) {
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+
+    // Update ticket fields
+    await ticket.update({
+      Status: UpdateStatus,
+      CloseDescription: UpdateDescription,
+      ResolutionFeedback: Feedback
+    });
+
+    res.json({ message: 'Ticket updated successfully' });
+  } catch (error) {
+    console.error('Error updating ticket:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // router.post('/create-ticket', async (req, res) => {
 //   try {
 //     const ticket = await Ticket.create(req.body);
@@ -130,5 +161,6 @@ console.log(TicketId, UpdateStatus, UpdateDescription, EmployeeID, Feedback,   7
 //     res.status(500).json({ error: 'Internal Server Error' });
 //   }
 // });
+
 
 module.exports = router;

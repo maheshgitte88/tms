@@ -73,7 +73,7 @@ function Home() {
           acc.closedCount++;
         } else if (ticket.Status === "Pending") {
           acc.openCount++;
-        } else if (ticket.Status === "Resolve") {
+        } else if (ticket.Status === "Resolved") {
           acc.resolvedCount++;
         }
         return acc;
@@ -89,7 +89,7 @@ function Home() {
     const dpId = user.DepartmentID;
     const SubDapId = user.SubDepartmentID;
     dispatch(getDepTicket({ departmentId: dpId, SubDepartmentId: SubDapId }));
-  }, [selectedTicket]);
+  }, []);
 
   const handleTicketClick = async (ticket) => {
     setSelectedTicket(ticket);
