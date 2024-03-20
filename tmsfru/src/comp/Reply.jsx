@@ -13,6 +13,8 @@ const Reply = ({ ticketData }) => {
   }
   const socket = useMemo(() => io("http://localhost:2000"), []);
 
+  const user = JSON.parse(localStorage.getItem("user"));
+
   const [formData, setFormData] = useState({
     TicketId: "",
     UpdateDescription: "",
@@ -23,6 +25,8 @@ const Reply = ({ ticketData }) => {
     UpdateStatus: "",
     files: null,
   });
+
+  console.log(ticketData, 27);
 
   useEffect(() => {
     if (ticketData) {
@@ -130,13 +134,16 @@ const Reply = ({ ticketData }) => {
         formData
       );
       console.log(response.data, 123);
+      if(response){
+        
+      }
     } catch (error) {
       console.log(error, 125);
     }
   };
 
   const handleFeedbackChange = (newRating) => {
-    setFormData(prevState => ({
+    setFormData((prevState) => ({
       ...prevState,
       Feedback: newRating,
     }));
@@ -185,9 +192,6 @@ const Reply = ({ ticketData }) => {
             className="pl-10 pr-10 py-4 w-full border rounded-md"
           />
         </div>
-        <div>
-        <StarRating value={formData.Feedback} onChange={handleFeedbackChange} />
-        </div>
 
         <div className="flex justify-between">
           <div>
@@ -205,7 +209,32 @@ const Reply = ({ ticketData }) => {
 
       <div className="flex justify-between">
         <div>
-          <button
+          {ticketData.Status === "Pending" &&
+          ticketData.Employee.EmployeeID !== user.EmployeeID ? (
+            <>
+              {" "}
+              <button
+                onClick={handleStatusUpdate}
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+              >
+                Resolve
+              </button>{" "}
+            </>
+          ) : (
+            <>
+              <StarRating
+                value={formData.Feedback}
+                onChange={handleFeedbackChange}
+              />
+              <button
+                onClick={handleStatusUpdateClosed}
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 ml-2"
+              >
+                Close
+              </button>{" "}
+            </>
+          )}
+          {/* <button
             onClick={handleStatusUpdate}
             className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
           >
@@ -216,7 +245,7 @@ const Reply = ({ ticketData }) => {
             className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 ml-2"
           >
             Close
-          </button>
+          </button> */}
         </div>
       </div>
     </div>

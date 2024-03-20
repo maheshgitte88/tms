@@ -32,10 +32,44 @@ export const getDepTicket = createAsyncThunk(
   }
 );
 
+export const getDepResolvedTicket = createAsyncThunk(
+  "getdepResTickets",
+  async ({ departmentId, SubDepartmentId, EmployeeID }, { rejectWithValue }) => {
+    try {
+      const res = await axios.get(
+        `http://localhost:2000/Ticket/department/Resolved/${departmentId}/${SubDepartmentId}/${EmployeeID}`
+      );
+      const resData = res.data.tickets;
+      return resData;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
+
+export const getDepClosedTicket = createAsyncThunk(
+  "getdepClosedTickets",
+  async ({ departmentId, SubDepartmentId, EmployeeID }, { rejectWithValue }) => {
+    try {
+      const res = await axios.get(
+        `http://localhost:2000/Ticket/department/Closed/${departmentId}/${SubDepartmentId}/${EmployeeID}`
+      );
+      const resData = res.data.tickets;
+      return resData;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
+
+
+
 export const DepTickets = createSlice({
   name: "DepTicketDetails",
   initialState: {
     DTickets: [],
+    DTClosedickets: [],
+    DTResolvedickets: [],
     loading: false,
     error: null,
   },
@@ -77,6 +111,28 @@ export const DepTickets = createSlice({
         state.DTickets = action.payload;
       })
       .addCase(getDepTicket.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload.message || "An error occurred"; // Handle potential missing error message
+      })
+      .addCase(getDepClosedTicket.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getDepClosedTicket.fulfilled, (state, action) => {
+        state.loading = false;
+        state.DTClosedickets = action.payload;
+      })
+      .addCase(getDepClosedTicket.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload.message || "An error occurred"; // Handle potential missing error message
+      })
+      .addCase(getDepResolvedTicket.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getDepResolvedTicket.fulfilled, (state, action) => {
+        state.loading = false;
+        state.DTResolvedickets = action.payload;
+      })
+      .addCase(getDepResolvedTicket.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload.message || "An error occurred"; // Handle potential missing error message
       });

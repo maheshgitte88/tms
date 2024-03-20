@@ -5,6 +5,10 @@ const router = express.Router();
 const cloudinary = require('cloudinary').v2;
 const Ticket = require('../models/Ticket');
 const TicketResolution = require('../models/TicketResolution');
+const Department = require('../models/Department');
+const SubDepartment = require('../models/SubDepartment');
+const TicketUpdate = require('../models/TicketUpdate');
+const Employee = require('../models/Employee');
 
 cloudinary.config({
   cloud_name: 'dtgpxvmpl',
@@ -91,7 +95,7 @@ router.put('/resolution/:ticketId', async (req, res) => {
       Status: UpdateStatus,
       ResolutionDescription: UpdateDescription,
       // ResEmployeeID,
-      ResolutionFeedback: Feedback
+      // ResolutionFeedback: Feedback
     });
 
     let ticketResolution = await TicketResolution.findOne({ where: { TicketId: TicketId } });
@@ -101,7 +105,7 @@ router.put('/resolution/:ticketId', async (req, res) => {
       ticketResolution = await TicketResolution.create({
         TicketId: TicketId,
         ResEmployeeID: EmployeeID,
-        ResolutionDescription: UpdateDescription
+        // ResolutionDescription: UpdateDescription
       });
     } else {
       // If ticket resolution exists, update its fields
@@ -161,6 +165,198 @@ router.put('/Closed/:ticketId', async (req, res) => {
 //     res.status(500).json({ error: 'Internal Server Error' });
 //   }
 // });
+
+
+
+
+// router.get("/department/:departmentId/:SubDepartmentId/:EmployeeID", async (req, res) => {
+//   const departmentId = req.params.departmentId;
+//   const SubDepartmentId = req.params.SubDepartmentId;
+//   const EmployeeID=req.params.EmployeeID
+//   try {
+//     if (!departmentId) {
+//       return res.status(404).json({ error: "Department not found" });
+//     }
+//     const tickets = await Ticket.findAll({
+//       where: {
+//         // AssignedToSubDepartmentID: departmentId,
+//         Status:"Closed",
+//         AssignedToSubDepartmentID: SubDepartmentId,
+//       },
+//       include: [
+//         {
+//           model: Employee,
+//           include: [
+//             {
+//               model: Department,
+//             },
+//             {
+//               model: SubDepartment,
+//             },
+//           ],
+//         },
+//         {
+//           model: Department,
+//           include: [
+//             {
+//               model: SubDepartment,
+//               where: { SubDepartmentId: SubDepartmentId },
+//             },
+//           ],
+//         },
+//         {
+//           model: TicketUpdate,
+//           include: [
+//             {
+//               model: Employee,
+//             },
+//           ],
+//         },
+//         {
+//           model: TicketResolution,
+//           where: { ResEmployeeID: EmployeeID },
+//         },
+//       ],
+//     });
+
+//     const data = {
+//       tickets,
+//     };
+
+//     res.json(data);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// });
+
+
+router.get("/department/Closed/:departmentId/:SubDepartmentId/:EmployeeID", async (req, res) => {
+  const departmentId = req.params.departmentId;
+  const SubDepartmentId = req.params.SubDepartmentId;
+  const EmployeeID = req.params.EmployeeID;
+
+  try {
+    if (!departmentId) {
+      return res.status(404).json({ error: "Department not found" });
+    }
+
+    const tickets = await Ticket.findAll({
+      where: {
+        Status: "Closed",
+        AssignedToSubDepartmentID: SubDepartmentId,
+      },
+      include: [
+        {
+          model: Employee,
+          include: [
+            {
+              model: Department,
+            },
+            {
+              model: SubDepartment,
+            },
+          ],
+        },
+        {
+          model: Department,
+          include: [
+            {
+              model: SubDepartment,
+              where: { SubDepartmentId: SubDepartmentId },
+            },
+          ],
+        },
+        {
+          model: TicketUpdate,
+          include: [
+            {
+              model: Employee,
+            },
+          ],
+        },
+        {
+          model: TicketResolution,
+          where: { ResEmployeeID: EmployeeID },
+          required: true, // This ensures that only tickets with matching resolutions are returned
+        },
+      ],
+    });
+
+    const data = {
+      tickets,
+    };
+
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+router.get("/department/Resolved/:departmentId/:SubDepartmentId/:EmployeeID", async (req, res) => {
+  const departmentId = req.params.departmentId;
+  const SubDepartmentId = req.params.SubDepartmentId;
+  const EmployeeID = req.params.EmployeeID;
+
+  try {
+    if (!departmentId) {
+      return res.status(404).json({ error: "Department not found" });
+    }
+
+    const tickets = await Ticket.findAll({
+      where: {
+        Status: "Resolved",
+        AssignedToSubDepartmentID: SubDepartmentId,
+      },
+      include: [
+        {
+          model: Employee,
+          include: [
+            {
+              model: Department,
+            },
+            {
+              model: SubDepartment,
+            },
+          ],
+        },
+        {
+          model: Department,
+          include: [
+            {
+              model: SubDepartment,
+              where: { SubDepartmentId: SubDepartmentId },
+            },
+          ],
+        },
+        {
+          model: TicketUpdate,
+          include: [
+            {
+              model: Employee,
+            },
+          ],
+        },
+        {
+          model: TicketResolution,
+          where: { ResEmployeeID: EmployeeID },
+          required: true, // This ensures that only tickets with matching resolutions are returned
+        },
+      ],
+    });
+
+    const data = {
+      tickets,
+    };
+
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 
 module.exports = router;

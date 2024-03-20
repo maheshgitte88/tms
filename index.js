@@ -229,6 +229,7 @@ app.get("/department/:departmentId/:SubDepartmentId", async (req, res) => {
     const tickets = await Ticket.findAll({
       where: {
         // AssignedToSubDepartmentID: departmentId,
+        Status:"Pending",
         AssignedToSubDepartmentID: SubDepartmentId,
       },
       include: [
@@ -300,7 +301,7 @@ app.get("/Tickets/:EmployeeID", async (req, res) => {
       return res.status(404).json({ error: "Employee not found" });
     }
     const tickets = await Ticket.findAll({
-      where: { EmployeeID: EmployeeID },
+      where: { EmployeeID: EmployeeID,  Status:"Pending"},
       include: [
         {
           model: Employee,
