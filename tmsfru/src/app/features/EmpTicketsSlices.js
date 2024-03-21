@@ -27,6 +27,35 @@ export const getEmployeeTicket = createAsyncThunk(
     }
 );
 
+export const getEmpResolvedTicket = createAsyncThunk(
+    "getEmpResTickets",
+    async ({ EmployeeID }, { rejectWithValue }) => {
+        try {
+            const res = await axios.get(
+                `http://localhost:2000/Ticket/Resolved/${EmployeeID}`
+            );
+            const resData = res.data.tickets;
+            return resData;
+        } catch (error) {
+            return rejectWithValue(error);
+        }
+    }
+);
+
+export const getEmpClosedTicket = createAsyncThunk(
+    "getEmpClosedTickets",
+    async ({ EmployeeID }, { rejectWithValue }) => {
+        try {
+            const res = await axios.get(
+                `http://localhost:2000/Ticket/Closed/${EmployeeID}`
+            );
+            const resData = res.data.tickets;
+            return resData;
+        } catch (error) {
+            return rejectWithValue(error);
+        }
+    }
+);
 
 
 
@@ -34,6 +63,8 @@ export const EmpTickets = createSlice({
     name: "EmpTicketDetails",
     initialState: {
         ETickets: [],
+        ETClosedickets: [],
+        ETResolvedickets: [],
         loading: false,
         error: null,
     },
@@ -73,7 +104,30 @@ export const EmpTickets = createSlice({
             .addCase(getEmployeeTicket.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload.message || "An error occurred"; // Handle potential missing error message
-            });
+            })
+            .addCase(getEmpClosedTicket.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getEmpClosedTicket.fulfilled, (state, action) => {
+                state.loading = false;
+                state.ETClosedickets = action.payload;
+            })
+            .addCase(getEmpClosedTicket.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload.message || "An error occurred"; // Handle potential missing error message
+            })
+            .addCase(getEmpResolvedTicket.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getEmpResolvedTicket.fulfilled, (state, action) => {
+                state.loading = false;
+                state.ETResolvedickets = action.payload;
+            })
+            .addCase(getEmpResolvedTicket.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload.message || "An error occurred"; // Handle potential missing error message
+            })
+
     },
 });
 export const { updateEmpTicket, updateTicketUpdate } = EmpTickets.actions;

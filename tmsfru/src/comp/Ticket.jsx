@@ -8,6 +8,8 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   getEmployeeTicket,
   updateTicketUpdate,
+  getEmpClosedTicket,
+  getEmpResolvedTicket,
 } from "../app/features/EmpTicketsSlices";
 import logo from "../Context/logo.png";
 
@@ -16,10 +18,13 @@ function Ticket() {
   const [selectedTicket, setSelectedTicket] = useState(null);
   const ticketUpdatesContainerRef = useRef(null);
   const [ticketupdateData, setTicketUpdateData] = useState([]);
-  const [notificationPermission, setNotificationPermission] =useState("default");
+  const [notificationPermission, setNotificationPermission] =
+    useState("default");
 
   const dispatch = useDispatch();
-  const { ETickets, loading } = useSelector((state) => state.empTickets);
+  const { ETickets, ETClosedickets, ETResolvedickets, loading } = useSelector(
+    (state) => state.empTickets
+  );
 
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -141,6 +146,23 @@ function Ticket() {
     }
   };
 
+  const GetClosedTickets = async () => {
+    const EmployeeID = user.EmployeeID;
+    dispatch(
+      getEmpClosedTicket({
+        EmployeeID: EmployeeID,
+      })
+    );
+  };
+  const GetResolvedTickets = async () => {
+    const EmployeeID = user.EmployeeID;
+    dispatch(
+      getEmpResolvedTicket({
+        EmployeeID: EmployeeID,
+      })
+    );
+  };
+
   return (
     <>
       <div className="container mx-auto p-1 flex flex-col sm:flex-row text-sm">
@@ -195,6 +217,144 @@ function Ticket() {
               </thead>
               <tbody>
                 {ETickets.map((ticket) => (
+                  <tr
+                    key={ticket.TicketID}
+                    onClick={() => handleTicketClick(ticket)}
+                    className={`cursor-pointer ${
+                      selectedTicket === ticket ? "selected-row" : ""
+                    }`}
+                  >
+                    <td>{ticket.TicketID}</td>
+                    <td className="text-red-600">{ticket.Status}</td>
+                    <td>{ticket.LeadId ? <>{ticket.LeadId}</> : <>NA</>}</td>
+                    <td>{ticket.Description}</td>
+                    <td>{ticket.Querycategory}</td>
+                    <td>{ticket.QuerySubcategory}</td>
+                    <td>{ticket.Department.DepartmentName}</td>
+                    {/* <td>{ticket.Department.SubDepartments.SubDepartmentName}</td> */}
+                    {/* <td>{ticket.Employee.Department.DepartmentName}</td> */}
+                    <td>{ticket.TicketResTimeInMinutes}</td>
+                    <td>
+                      <p className="bg-red-400 text-center rounded-full">
+                        {ticket.TicketUpdates ? (
+                          <>{ticket.TicketUpdates.length}</>
+                        ) : (
+                          <>0</>
+                        )}
+                      </p>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="mb-4">
+            <h6 className="font-semibold mb-2">Tickets For Me</h6>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div
+                onClick={GetResolvedTickets}
+                className="bg-green-200 p-4 rounded shadow flex justify-around hover:bg-green-400"
+              >
+                <div>
+                  <strong>Resolve</strong>
+                  <h5 className="font-semibold">{}</h5>
+                </div>
+                <i className="bi bi-journal-check text-4xl"></i>
+              </div>
+
+              <div
+                onClick={GetClosedTickets}
+                className="bg-pink-200 p-4 rounded shadow flex justify-around hover:bg-pink-400"
+              >
+                <div>
+                  <strong>Closed</strong>
+                  <h5 className="font-semibold">{}</h5>
+                </div>
+                <i className="bi bi-journal-check text-4xl"></i>
+              </div>
+              <div className="bg-purple-200 p-4 rounded shadow">Card 3</div>
+              <div className="bg-orange-200 p-4 rounded shadow">Card 4</div>
+              <div className="bg-red-200 p-4 rounded shadow">Card 5</div>
+              <div className="bg-indigo-200 p-4 rounded shadow">Card 6</div>
+            </div>
+          </div>
+
+          <div className="table-container">
+            <table
+              className={`custom-table ${
+                selectedTicket ? "selected-table" : ""
+              }`}
+            >
+              <thead>
+                <tr>
+                  <th>Id</th>
+                  <th>Status</th>
+                  <th>Lead-Id</th>
+                  <th>Description</th>
+                  <th>Querycategory</th>
+                  <th>QuerySubcategory</th>
+                  <th>To-Det</th>
+                  <th>Time</th>
+                  <th>notifications</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ETClosedickets.map((ticket) => (
+                  <tr
+                    key={ticket.TicketID}
+                    onClick={() => handleTicketClick(ticket)}
+                    className={`cursor-pointer ${
+                      selectedTicket === ticket ? "selected-row" : ""
+                    }`}
+                  >
+                    <td>{ticket.TicketID}</td>
+                    <td className="text-red-600">{ticket.Status}</td>
+                    <td>{ticket.LeadId ? <>{ticket.LeadId}</> : <>NA</>}</td>
+                    <td>{ticket.Description}</td>
+                    <td>{ticket.Querycategory}</td>
+                    <td>{ticket.QuerySubcategory}</td>
+                    <td>{ticket.Department.DepartmentName}</td>
+                    {/* <td>{ticket.Department.SubDepartments.SubDepartmentName}</td> */}
+                    {/* <td>{ticket.Employee.Department.DepartmentName}</td> */}
+                    <td>{ticket.TicketResTimeInMinutes}</td>
+                    <td>
+                      <p className="bg-red-400 text-center rounded-full">
+                        {ticket.TicketUpdates ? (
+                          <>{ticket.TicketUpdates.length}</>
+                        ) : (
+                          <>0</>
+                        )}
+                      </p>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+
+          <div className="table-container mt-4">
+            <table
+              className={`custom-table ${
+                selectedTicket ? "selected-table" : ""
+              }`}
+            >
+              <thead>
+                <tr>
+                  <th>Id</th>
+                  <th>Status</th>
+                  <th>Lead-Id</th>
+                  <th>Description</th>
+                  <th>Querycategory</th>
+                  <th>QuerySubcategory</th>
+                  <th>To-Det</th>
+                  <th>Time</th>
+                  <th>notifications</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ETResolvedickets.map((ticket) => (
                   <tr
                     key={ticket.TicketID}
                     onClick={() => handleTicketClick(ticket)}

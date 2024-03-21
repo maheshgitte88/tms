@@ -385,8 +385,6 @@ function Home() {
               </tbody>
             </table>
           </div>
-
-          
         </div>
 
         <div className="table-container">
@@ -444,7 +442,6 @@ function Home() {
             </tbody>
           </table>
         </div>
-
 
         <div>
           <h6 className="font-semibold mb-2">Tickets raised by me</h6>

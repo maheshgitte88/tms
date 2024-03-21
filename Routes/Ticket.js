@@ -359,4 +359,133 @@ router.get("/department/Resolved/:departmentId/:SubDepartmentId/:EmployeeID", as
 });
 
 
+
+
+router.get("/Closed/:EmployeeID", async (req, res) => {
+  // const departmentId = req.params.departmentId;
+  // const SubDepartmentId = req.params.departmentId;
+  const EmployeeID = req.params.EmployeeID;
+  try {
+    if (!EmployeeID) {
+      return res.status(404).json({ error: "Employee not found" });
+    }
+    const tickets = await Ticket.findAll({
+      where: { EmployeeID: EmployeeID,  Status:"Closed"},
+      include: [
+        {
+          model: Employee,
+          // include: [
+          //   {
+          //     model: Department,
+          //   },
+          //   {
+          //     model: SubDepartment,
+          //   },
+          // ],
+        },
+        {
+          model: Department,
+          include: [
+            {
+              model: SubDepartment,
+            },
+          ],
+        },
+        {
+          model: TicketUpdate,
+          include: [
+            {
+              model: Employee,
+              include: [
+                {
+                  model: Department,
+                },
+                {
+                  model: SubDepartment,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          model: TicketResolution,
+        },
+      ],
+    });
+
+    const data = {
+      tickets,
+    };
+
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.get("/Resolved/:EmployeeID", async (req, res) => {
+  // const departmentId = req.params.departmentId;
+  // const SubDepartmentId = req.params.departmentId;
+  const EmployeeID = req.params.EmployeeID;
+  try {
+    if (!EmployeeID) {
+      return res.status(404).json({ error: "Employee not found" });
+    }
+    const tickets = await Ticket.findAll({
+      where: { EmployeeID: EmployeeID,  Status:"Resolved"},
+      include: [
+        {
+          model: Employee,
+          // include: [
+          //   {
+          //     model: Department,
+          //   },
+          //   {
+          //     model: SubDepartment,
+          //   },
+          // ],
+        },
+        {
+          model: Department,
+          include: [
+            {
+              model: SubDepartment,
+            },
+          ],
+        },
+        {
+          model: TicketUpdate,
+          include: [
+            {
+              model: Employee,
+              include: [
+                {
+                  model: Department,
+                },
+                {
+                  model: SubDepartment,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          model: TicketResolution,
+        },
+      ],
+    });
+
+    const data = {
+      tickets,
+    };
+
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
 module.exports = router;

@@ -15,7 +15,7 @@ const Sidebar = () => {
     <aside
       className={`bg-gray-800 text-white ${
         isOpen ? "w-48" : "w-12"
-      } h-screen transition-width duration-300 ease-in-out`}
+      } f-screen transition-width duration-300 ease-in-out`}
     >
       <div className="flex justify-between border-b items-center py-3 px-3">
         <button onClick={toggleSidebar} className="text-white text-xl">
