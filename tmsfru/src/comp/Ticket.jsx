@@ -390,51 +390,46 @@ function Ticket() {
 
         {/* Right Column */}
         <div className="sm:w-1/3">
-          {selectedTicket && (
-            <div
-              ref={ticketUpdatesContainerRef}
-              className="m-2 p-2 bg-orange-400 border border-gray-300 overflow-y-auto max-h-96"
-            >
-              <div className="mt-4">
-                <div className="ticket-updates-container">
-                  {ticketupdateData.map((update, index) => (
-                    <div
-                      key={index}
-                      className={`ticket-update ${
-                        update.EmployeeID === 1 ? "sender" : "receiver"
-                      }`}
-                    >
-                      <div className="update-info">
-                        <p>{update.UpdateStatus}</p>
-                        <p>{update.UpdateDescription}</p>
-                        {/* <small style={{ fontSize: "8px", color: "blue" }}>
-                        {update.updatedAt ? formatDate(update.updatedAt) : ""}
-                      </small> */}
-                      </div>
-
-                      <div className="update-attachments">
-                        {update.UpdatedAttachmentUrls ? (
-                          <>
-                            {" "}
-                            {update.UpdatedAttachmentUrls.map((url, index) => (
-                              <img
-                                key={index}
-                                src={url}
-                                onClick={() => handleImageClick(url)} // Pass URL to handleImageClick
-                                alt={`Attachment ${index + 1}`}
-                              />
-                            ))}
-                          </>
-                        ) : (
-                          <></>
-                        )}
-                      </div>
+        {selectedTicket && selectedTicket.Status === "Pending" && (
+          <div
+            ref={ticketUpdatesContainerRef}
+            className="m-2 p-2 bg-orange-400 border border-gray-300 overflow-y-auto max-h-72"
+          >
+            <div className="mt-4">
+              <div className="ticket-updates-container">
+                {ticketupdateData.map((update, index) => (
+                  <div
+                    key={index}
+                    className={`ticket-update ${
+                      update.EmployeeID ? "receiver" : "sender"
+                    }`}
+                  >
+                    <div className="update-info">
+                      <p>{update.UpdateStatus}</p>
+                      <p>{update.UpdateDescription}</p>
                     </div>
-                  ))}
-                </div>
+                    <div className="update-attachments">
+                      {update.UpdatedAttachmentUrls ? (
+                        <>
+                          {update.UpdatedAttachmentUrls.map((url, index) => (
+                            <img
+                              key={index}
+                              src={url}
+                              onClick={() => handleImageClick(url)}
+                              alt={`Attachment ${index + 1}`}
+                            />
+                          ))}
+                        </>
+                      ) : (
+                        <></>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          )}
+          </div>
+        )}
           <Reply ticketData={selectedTicket} />
         </div>
       </div>

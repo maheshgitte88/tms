@@ -205,7 +205,7 @@ function Home() {
     <div className="container mx-auto p-1 flex flex-col sm:flex-row text-sm">
       <div className="sm:w-3/4">
         <div className="mb-4">
-          <h6 className="font-semibold mb-2">Comman Bucket</h6>
+          {/* <h6 className="font-semibold mb-2">Comman Bucket</h6> */}
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-4">
             <Link to={"Tickets"}>
               <div className="bg-red-200 p-4 rounded shadow flex justify-around hover:bg-blue-400">
@@ -455,7 +455,7 @@ function Home() {
       </div>
       {/* Right Column */}
       <div className="sm:w-1/4">
-        {selectedTicket && (
+        {selectedTicket && selectedTicket.Status === "Pending" && (
           <div
             ref={ticketUpdatesContainerRef}
             className="m-2 p-2 bg-orange-400 border border-gray-300 overflow-y-auto max-h-72"
@@ -472,20 +472,15 @@ function Home() {
                     <div className="update-info">
                       <p>{update.UpdateStatus}</p>
                       <p>{update.UpdateDescription}</p>
-                      {/* <small style={{ fontSize: "8px", color: "blue" }}>
-                        {update.updatedAt ? formatDate(update.updatedAt) : ""}
-                      </small> */}
                     </div>
-
                     <div className="update-attachments">
                       {update.UpdatedAttachmentUrls ? (
                         <>
-                          {" "}
                           {update.UpdatedAttachmentUrls.map((url, index) => (
                             <img
                               key={index}
                               src={url}
-                              onClick={() => handleImageClick(url)} // Pass URL to handleImageClick
+                              onClick={() => handleImageClick(url)}
                               alt={`Attachment ${index + 1}`}
                             />
                           ))}
@@ -502,7 +497,6 @@ function Home() {
         )}
         <Reply ticketData={selectedTicket} />
       </div>
-      ;
     </div>
   );
 }

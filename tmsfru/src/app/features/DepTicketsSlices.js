@@ -81,6 +81,22 @@ export const DepTickets = createSlice({
       const updatedTickets = action.payload;
       state.DTickets = updatedTickets;
     },
+
+    StatusResTicket: (state, action) => {
+      const updatedTicketStatus = action.payload;
+      console.log(updatedTicketStatus);
+      const { TicketId, UpdateDescription } = updatedTicketStatus;
+    
+      // Find the index of the ticket in state.DTickets
+      const ticketIndex = state.DTickets.findIndex(ticket => ticket.TicketID === TicketId);
+    
+      // Check if the ticket index is found and the status is "Resolved"
+      if (ticketIndex !== -1) {
+        state.DTickets[ticketIndex].Status === "Resolved"
+        // Update the UpdateDescription to ResolutionDescription
+        state.DTickets[ticketIndex].ResolutionDescription = UpdateDescription;
+      }
+    },
     updateDtTicketUpdate: (state, action) => {
       const updatedTicket = action.payload;
       const ticketIndex = state.DTickets.findIndex(ticket => ticket.TicketID === updatedTicket.TicketId);
@@ -139,5 +155,5 @@ export const DepTickets = createSlice({
   },
 });
 
-export const { updateDeptTicket, updateTicket, updateDtTicketUpdate } = DepTickets.actions;
+export const { updateDeptTicket, updateTicket, updateDtTicketUpdate , StatusResTicket } = DepTickets.actions;
 export default DepTickets.reducer;

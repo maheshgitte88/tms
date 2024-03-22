@@ -4,6 +4,8 @@ import axios from "axios";
 
 import io from "socket.io-client";
 import StarRating from "./StarRating";
+import { useDispatch } from "react-redux";
+import { StatusResTicket } from "../app/features/DepTicketsSlices";
 
 // const socket = io.connect("http://localhost:2000");
 
@@ -14,6 +16,7 @@ const Reply = ({ ticketData }) => {
   const socket = useMemo(() => io("http://localhost:2000"), []);
 
   const user = JSON.parse(localStorage.getItem("user"));
+  const dispatch = useDispatch();
 
   const [formData, setFormData] = useState({
     TicketId: "",
@@ -115,12 +118,18 @@ const Reply = ({ ticketData }) => {
     }
   };
 
+  console.log(formData, 120)
+
   const handleStatusUpdate = async () => {
     try {
       const response = await axios.put(
         `http://localhost:2000/Ticket/resolution/${ticketData?.TicketID}?resolved=Resolved`,
         formData
       );
+      
+      if(response){
+        dispatch(StatusResTicket(formData))
+      }
       console.log(response.data, 123);
     } catch (error) {
       console.log(error, 125);
@@ -150,38 +159,37 @@ const Reply = ({ ticketData }) => {
 
   const createdAt = new Date(ticketData.createdAt);
   const resolutionCreatedAt = ticketData.TicketResolution?.createdAt
-  ? new Date(ticketData.TicketResolution.createdAt)
-  : null;  
-  const timeToSolvedTicketInMinutes = Math.floor((resolutionCreatedAt - createdAt) / (1000 * 60));
-
-  // Calculate ExtraTimeTaken
-  const extraTimeTaken = timeToSolvedTicketInMinutes - ticketData.TicketResTimeInMinutes;
+    ? new Date(ticketData.TicketResolution.createdAt)
+    : null;
+  const timeToSolvedTicketInMinutes = Math.floor(
+    (resolutionCreatedAt - createdAt) / (1000 * 60)
+  );
 
   // Get status color based on ticket status
   const getStatusColor = () => {
     switch (ticketData.Status) {
-      case 'Pending':
-        return 'text-red-600';
-      case 'Resolved':
-        return 'text-blue-600';
-      case 'Closed':
-        return 'text-green-600';
+      case "Pending":
+        return "text-red-600";
+      case "Resolved":
+        return "text-blue-600";
+      case "Closed":
+        return "text-green-600";
       default:
-        return 'text-black';
+        return "text-black";
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-1 m-2 p-2 relative">
+    <div className="max-w-md mx-autop-1 m-1 relative">
       {ticketData.Status === "Pending" ||
       (ticketData.Status === "Resolved" &&
         ticketData.Employee.EmployeeID === user.EmployeeID) ? (
         <form onSubmit={handleSubmit} onKeyDown={handleKeyDown}>
-          <div className="mb-1">
+          <div className="relative mb-1">
             <div className="absolute left-0 top-0 flex items-center">
               <label
                 htmlFor="files"
-                className="m-4 py-4 cursor-pointer border rounded-lg"
+                className="m-2 py-4 cursor-pointer border rounded-lg"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -214,11 +222,19 @@ const Reply = ({ ticketData }) => {
               value={formData.UpdateDescription}
               onChange={handleChange}
               onKeyDown={handleKeyDown}
-              className="pl-10 pr-10 py-4 w-full border rounded-md"
+              className="pl-10 pr-20 py-4 w-full border rounded-md"
             />
+            {(formData.UpdateDescription || formData.files) && (
+              <button
+                type="submit"
+                className="absolute mt-2 py-4 right-0 top-0 bg-blue-500 text-xl text-white px-2 py-2 rounded hover:bg-orange-700 hover:text-2xl mr-2"
+              >
+                <i class="bi bi-send"></i>
+              </button>
+            )}
           </div>
 
-          <div className="flex justify-between">
+          {/* <div className="flex justify-between">
             <div>
               {(formData.UpdateDescription || formData.files) && (
                 <button
@@ -229,7 +245,7 @@ const Reply = ({ ticketData }) => {
                 </button>
               )}
             </div>
-          </div>
+          </div> */}
         </form>
       ) : null}
 
@@ -263,59 +279,209 @@ const Reply = ({ ticketData }) => {
         </div>
       </div>
 
+      {/* <div className="bg-white rounded-lg shadow-md p-6 overflow-y-auto h-full">
+        <h2 className="text-lg font-semibold mb-4 text-blue-600 border-b pb-2">
+          Ticket Details
+        </h2>
+        <div className="mb-4">
+          <p className="text-gray-600 mb-2">
+            <b>Status:</b>{" "}
+            <span className={getStatusColor()}>{ticketData.Status}</span>
+          </p>
+          <p className="text-gray-600 mb-2">
+            <b>Description:</b> {ticketData.Description}
+          </p>
+          <p className="text-gray-600 mb-2">
+            <b>Category:</b> {ticketData.Querycategory}
+          </p>
+          <p className="text-gray-600 mb-2">
+            <b>Subcategory:</b> {ticketData.QuerySubcategory}
+          </p>
+          <p className="text-gray-600 mb-2">
+            <b>Resolved Time:</b> {ticketData.TicketResTimeInMinutes} minutes
+          </p>
+          {ticketData.TicketResolution ? (
+            <>
+              <p className="text-gray-600 mb-2">
+                <b>Solved Time (Minutes):</b> {timeToSolvedTicketInMinutes}
+              </p>
+              <p className="text-gray-600 mb-2">
+                <b>Extra Time Taken (Minutes):</b> {extraTimeTaken}
+              </p>
+              <p className="text-gray-600 mb-2">
+                <b>Resolution Description:</b>{" "}
+                {ticketData.ResolutionDescription}
+              </p>
 
-
-
-
-
-
-      <div className="bg-white rounded-lg shadow-md p-6 overflow-y-auto h-full">
-      <h2 className="text-lg font-semibold mb-4 text-blue-600 border-b pb-2">Ticket Details</h2>
-      <div className="mb-4">
-        <p className="text-gray-600 mb-2"><b>Status:</b> <span className={getStatusColor()}>{ticketData.Status}</span></p>
-        <p className="text-gray-600 mb-2"><b>Description:</b> {ticketData.Description}</p>
-        <p className="text-gray-600 mb-2"><b>Category:</b> {ticketData.Querycategory}</p>
-        <p className="text-gray-600 mb-2"><b>Subcategory:</b> {ticketData.QuerySubcategory}</p>
-        <p className="text-gray-600 mb-2"><b>Resolved Time:</b> {ticketData.TicketResTimeInMinutes} minutes</p>
-        {ticketData.TicketResolution ? 
-        <>
-        <p className="text-gray-600 mb-2"><b>Solved Time (Minutes):</b> {timeToSolvedTicketInMinutes}</p>
-        <p className="text-gray-600 mb-2"><b>Extra Time Taken (Minutes):</b> {extraTimeTaken}</p>
-        <p className="text-gray-600 mb-2"><b>Resolution Description:</b> {ticketData.ResolutionDescription}</p>
-
-        {ticketData.CloseDescription || ticketData.CloseDescription ? <>
-        <p className="text-gray-600 mb-2"><b>Resolution Feedback:</b> {ticketData.ResolutionFeedback}</p>
-        <p className="text-gray-600 mb-2"><b>Closed Description:</b> {ticketData.CloseDescription}</p>
-        </> :<></> }
-      
-        </>
-         :<></>}
-       
-      </div>
-
-      <h2 className="text-lg font-semibold mb-4 text-blue-600 border-b pb-2">Ticket Updates</h2>
-      <div className="mb-4">
-        {ticketData.TicketUpdates.map((update, index) => (
-          <div key={index} className="border-b border-gray-300 mb-4 pb-4">
-            <p className="text-gray-600 mb-2"><b>Update {index + 1}</b></p>
-            <p className="text-gray-600 mb-2"><b>Description:</b> {update.UpdateDescription}</p>
-            <p className="text-gray-600 mb-2"><b>Employee:</b> {update.Employee.EmployeeName}</p>
-            <p className="text-gray-600 mb-2"><b>Timestamp:</b> {update.UpdateTimestamp}</p>
-          </div>
-        ))}
-      </div>
-
-      {ticketData.Status === "Closed" && (
-        <div>
-          <h2 className="text-lg font-semibold mb-4 text-blue-600 border-b pb-2">Ticket Resolution</h2>
-          <div className="mb-4">
-            <p className="text-gray-600 mb-2"><b>Resolution Description:</b> {ticketData.TicketResolution.ResolutionDescription}</p>
-            <p className="text-gray-600 mb-2"><b>Resolved By:</b> {ticketData.TicketResolution.ResEmployeeID}</p>
-            <p className="text-gray-600 mb-2"><b>Resolved Time:</b> {ticketData.TicketResolution.updatedAt}</p>
-          </div>
+              {ticketData.CloseDescription || ticketData.CloseDescription ? (
+                <>
+                  <p className="text-gray-600 mb-2">
+                    <b>Resolution Feedback:</b> {ticketData.ResolutionFeedback}
+                  </p>
+                  <p className="text-gray-600 mb-2">
+                    <b>Closed Description:</b> {ticketData.CloseDescription}
+                  </p>
+                </>
+              ) : (
+                <></>
+              )}
+            </>
+          ) : (
+            <></>
+          )}
         </div>
-      )}
-    </div>
+
+        <h2 className="text-lg font-semibold mb-4 text-blue-600 border-b pb-2">
+          Ticket Updates
+        </h2>
+        <div className="mb-4">
+          {ticketData.TicketUpdates.map((update, index) => (
+            <div key={index} className="border-b border-gray-300 mb-4 pb-4">
+              <p className="text-gray-600 mb-2">
+                <b>Update {index + 1}</b>
+              </p>
+              <p className="text-gray-600 mb-2">
+                <b>Description:</b> {update.UpdateDescription}
+              </p>
+              <p className="text-gray-600 mb-2">
+                <b>Employee:</b> {update.Employee.EmployeeName}
+              </p>
+              <p className="text-gray-600 mb-2">
+                <b>Timestamp:</b> {update.UpdateTimestamp}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {ticketData.Status === "Closed" && (
+          <div>
+            <h2 className="text-lg font-semibold mb-4 text-blue-600 border-b pb-2">
+              Ticket Resolution
+            </h2>
+            <div className="mb-4">
+              <p className="text-gray-600 mb-2">
+                <b>Resolution Description:</b>{" "}
+                {ticketData.TicketResolution.ResolutionDescription}
+              </p>
+              <p className="text-gray-600 mb-2">
+                <b>Resolved By:</b> {ticketData.TicketResolution.ResEmployeeID}
+              </p>
+              <p className="text-gray-600 mb-2">
+                <b>Resolved Time:</b> {ticketData.TicketResolution.updatedAt}
+              </p>
+            </div>
+          </div>
+        )}
+      </div> */}
+ {ticketData.Status === "Pending" ? <> </> :<>  <div className="bg-white rounded-lg shadow-md p-2 overflow-y-auto h-full">
+        <p className="text-sm font-semibold mb-2 text-blue-600 border-b pb-1">
+          Ticket Details
+        </p>
+        <div className="mb-1">
+          <p className="text-gray-600 mb-1">
+            <b>Status:</b>{" "}
+            <span className={getStatusColor()}>{ticketData.Status}</span>
+          </p>
+          <p className="text-gray-600 mb-1">
+            <b>Description:</b> <br />{" "}
+            <textarea
+              className="px-2 w-full border py-3"
+              value={ticketData.Description}
+            ></textarea>
+          </p>
+          {/* <p className="text-gray-600 mb-1">
+            <b>Category:</b> {ticketData.Querycategory}
+          </p>
+          <p className="text-gray-600 mb-1">
+            <b>Subcategory:</b> {ticketData.QuerySubcategory}
+          </p> */}
+          <p className="text-gray-600 mb-1">
+            <b>Time limit:</b> {ticketData.TicketResTimeInMinutes} minutes
+          </p>
+          {ticketData.TicketResolution ? (
+            <>
+              <p className="text-gray-600 mb-1">
+                <b>Time Taken:</b> {timeToSolvedTicketInMinutes} (Minutes)
+              </p>
+              {/* <p className="text-gray-600 mb-1">
+                <b>Extra Time Taken (Minutes):</b> {extraTimeTaken}
+              </p> */}
+              {/* <p className="text-gray-600 mb-2">
+                <b>Resolution Description:</b>{" "}
+                {ticketData.ResolutionDescription}
+              </p> */}
+
+              {ticketData.CloseDescription || ticketData.CloseDescription ? (
+                <>
+                  <p className="text-gray-600 mb-1">
+                    <b>Feedback:</b> {ticketData.ResolutionFeedback}
+                  </p>
+                  <p className="text-gray-600 mb-1">
+                    <b>Feedback Description:</b> {ticketData.CloseDescription}
+                  </p>
+                </>
+              ) : (
+                <></>
+              )}
+            </>
+          ) : (
+            <></>
+          )}
+        </div>
+        {ticketData.Status === "Closed" ? <></> : <></>}
+        <p className="text-sm font-semibold mb-1 text-blue-600 border-b pb-2">
+          Ticket Updates
+        </p>
+        <div className="mb-2 overflow-y-auto max-h-48">
+          {ticketData.TicketUpdates.map((update, index) => (
+            <div key={index} className="border-b border-gray-300 mb-2 pb-2">
+              {/* <p className="text-gray-600 mb-1">
+                <b>Update {index + 1}</b>
+              </p> */}
+              <p className="text-gray-600 mb-2">
+                <b>Description:</b> {update.UpdateDescription}
+              </p>
+              <p className="text-gray-600 mb-2">
+                <b>Employee:</b>{" "}
+                {update.Employee.EmployeeName ? (
+                  <>{update.Employee.EmployeeName}</>
+                ) : (
+                  <></>
+                )}
+              </p>
+              <p className="text-gray-600 mb-2">
+                <b>Time:</b> {update.UpdateTimestamp}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {ticketData.Status === "Closed" || ticketData.Status === "Resolved" ? (
+          <>
+            <p className="text-sm font-semibold mb-2 text-blue-600 border-b pb-2">
+              Ticket Resolution
+            </p>
+            <div className="mb-2">
+              <p className="text-gray-600 mb-1">
+                <b>Resolution Description:</b> <br />{" "}
+                <textarea
+                  className="px-2 w-full border py-3"
+                  value={ticketData.TicketResolution.ResolutionDescription}
+                ></textarea>
+              </p>
+              <p className="text-gray-600 mb-1">
+                <b>Resolved By:</b> {ticketData.TicketResolution.ResEmployeeID}
+              </p>
+              <p className="text-gray-600 mb-1">
+                <b>Resolved Time:</b> {ticketData.TicketResolution.updatedAt}
+              </p>
+            </div>
+          </>
+        ) : (
+          <></>
+        )}
+      </div></>}
+
 
 
 
@@ -394,10 +560,6 @@ const Reply = ({ ticketData }) => {
         </div>
       )}
     </div> */}
-
-
-
-
     </div>
   );
 };

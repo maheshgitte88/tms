@@ -4,7 +4,7 @@ const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
-    <header className="bg-white py-2 px-2 shadow flex justify-between items-center">
+    <header className="bg-white py-1 px-2 shadow flex justify-between items-center">
       <img style={{ width: "115px" }} src={'https://res.cloudinary.com/dtgpxvmpl/image/upload/v1702100329/mitsde_logo_vmzo63.png'} className="object-cover" />
       <div className="relative">
         <button
