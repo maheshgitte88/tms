@@ -89,18 +89,23 @@ export const DepTickets = createSlice({
     
       // Find the index of the ticket in state.DTickets
       const ticketIndex = state.DTickets.findIndex(ticket => ticket.TicketID === TicketId);
-    
-      // Check if the ticket index is found and the status is "Resolved"
-      if (ticketIndex !== -1) {
-        state.DTickets[ticketIndex].Status === "Resolved"
+          
+      // Check if the ticket index is found
+      if (ticketIndex !== -1 && state.DTickets[ticketIndex].Status === "Resolved") {
         // Update the UpdateDescription to ResolutionDescription
         state.DTickets[ticketIndex].ResolutionDescription = UpdateDescription;
+    
+        // Remove the ticket from DTickets
+        const removedTicket = state.DTickets.splice(ticketIndex, 1);
+    
+        // Add the removed ticket to DTResolvedickets
+        state.DTResolvedickets.push(removedTicket[0]);
       }
     },
+
     updateDtTicketUpdate: (state, action) => {
       const updatedTicket = action.payload;
       const ticketIndex = state.DTickets.findIndex(ticket => ticket.TicketID === updatedTicket.TicketId);
-
       if (ticketIndex !== -1) {
           state.DTickets[ticketIndex].TicketUpdates.push(updatedTicket);
       }

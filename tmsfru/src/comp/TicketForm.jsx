@@ -56,7 +56,7 @@ function TicketForm() {
       socket.emit("joinDepaTicketRoom", formData.AssignedToSubDepartmentID);
     }
     if (ticketAsgSubDepId) {
-      console.log("romm joined for form", ticketAsgSubDepId)
+      console.log("romm joined for form", ticketAsgSubDepId);
       socket.emit("joinDepaTicketRoom", ticketAsgSubDepId);
     }
 
@@ -120,6 +120,8 @@ function TicketForm() {
         createTicket: formData,
         AssigSubDepId: formData.AssignedToSubDepartmentID,
       });
+      setShowSealsForm(false);
+
       // dispatch(createTicket(formData));
     } catch (error) {
       console.error(error);
@@ -268,11 +270,12 @@ function TicketForm() {
         AttachmentUrl: updatedAttachmentUrls, // Send file URLs instead of actual files
         EmployeeID: JSON.parse(localStorage.getItem("user")).EmployeeID,
       };
-      console.log(ticketAsgSubDepId, 270)
+      console.log(ticketAsgSubDepId, 270);
       socket.emit("createTicket", {
         createTicket: formDataToSend,
         AssigSubDepId: ticketAsgSubDepId,
       });
+      setShowForm(false);
       // Dispatch createTicket action with form data
       // dispatch(createTicket(formDataToSend));
     } catch (error) {
@@ -280,26 +283,44 @@ function TicketForm() {
     }
   };
 
+  const formGenralShow = () => {
+    setShowForm(!showForm);
+    setShowSealsForm(false);
+  };
+  const formLeadShow = () => {
+    setShowSealsForm(!showSeslsForm);
+    setShowForm(false);
+  };
   return (
     <>
-      <div className="container mx-auto mt-8">
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mb-4"
-        >
-          {showForm ? "Hide Form" : "Generate Ticket"}
-        </button>
+      <div className="container mx-auto mt-2">
+        <div className="flex justify-between">
+          <button
+            onClick={formGenralShow}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mb-4"
+          >
+            {showForm ? "Hide Form" : "Generate Ticket"}
+          </button>
+
+          <button
+            onClick={formLeadShow}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mb-4"
+          >
+            {showSeslsForm ? "Hide Form" : "Lead Tickets"}
+          </button>
+        </div>
+
         {showForm && (
-          <div className="max-w-md mx-auto p-8 bg-white rounded shadow-md">
-            <h1 className="text-2xl mb-4">Generate Ticket</h1>
+          <div className="max-w-md mx-auto p-2 bg-white rounded shadow-md">
+            <h6 className="text-xl mb-2">Generate Ticket</h6>
             <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label
+              <div className="mb-2">
+                {/* <label
                   htmlFor="department"
                   className="block text-sm font-bold mb-2"
                 >
                   Department
-                </label>
+                </label> */}
                 <select
                   name="department"
                   id="department"
@@ -312,13 +333,13 @@ function TicketForm() {
                   {departments}
                 </select>
               </div>
-              <div className="mb-4">
-                <label
+              <div className="mb-2">
+                {/* <label
                   htmlFor="category"
                   className="block text-sm font-bold mb-2"
                 >
                   Category
-                </label>
+                </label> */}
                 <select
                   name="category"
                   id="category"
@@ -331,13 +352,13 @@ function TicketForm() {
                   {categories}
                 </select>
               </div>
-              <div className="mb-4">
-                <label
+              <div className="mb-2">
+                {/* <label
                   htmlFor="subcategory"
                   className="block text-sm font-bold mb-2"
                 >
                   Subcategory
-                </label>
+                </label> */}
 
                 <select
                   name="subcategory"
@@ -357,7 +378,7 @@ function TicketForm() {
                 </select>
               </div>
 
-              <div className="mb-4">
+              <div className="mb-2">
                 <textarea
                   id="description"
                   name="Description"
@@ -369,7 +390,7 @@ function TicketForm() {
                   required
                 />
               </div>
-              <div className="mb-4">
+              <div className="mb-2">
                 <input
                   type="file"
                   id="files"
@@ -393,12 +414,12 @@ function TicketForm() {
           </div>
         )}
 
-        <button
-          onClick={() => setShowSealsForm(!showSeslsForm)}
+        {/* <button
+          onClick={formLeadShow}
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mb-4"
         >
           {showSeslsForm ? "Hide Form" : "Lead Tickets"}
-        </button>
+        </button> */}
 
         <>
           {showSeslsForm && (

@@ -93,7 +93,8 @@ function Home() {
     const dpId = user.DepartmentID;
     const SubDapId = user.SubDepartmentID;
     dispatch(getDepTicket({ departmentId: dpId, SubDepartmentId: SubDapId }));
-  }, []);
+  }, [getDepClosedTicket,
+    getDepResolvedTicket]);
 
   const GetClosedTickets = async () => {
     const dpId = user.DepartmentID;
@@ -203,7 +204,7 @@ function Home() {
 
   return (
     <div className="container mx-auto p-1 flex flex-col sm:flex-row text-sm">
-      <div className="sm:w-3/4">
+      <div className="sm:w-full">
         <div className="mb-4">
           {/* <h6 className="font-semibold mb-2">Comman Bucket</h6> */}
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-4">
@@ -251,7 +252,7 @@ function Home() {
                 <th>T-Type</th>
                 <th>Lead-Id</th>
                 <th>Status</th>
-                <th>Description</th>
+                {/* <th>Description</th> */}
                 <th>Query</th>
                 <th>Sub-Query</th>
                 <th>Location</th>
@@ -275,7 +276,7 @@ function Home() {
                   <td>{ticket.TicketType}</td>
                   <td>{ticket.LeadId ? <>{ticket.LeadId}</> : <>NA</>}</td>
                   <td className="text-red-600">{ticket.Status}</td>
-                  <td>{ticket.Description}</td>
+                  {/* <td>{ticket.Description}</td> */}
                   <td>{ticket.Querycategory}</td>
                   <td>{ticket.QuerySubcategory}</td>
                   <td>{ticket.Employee.Location}</td>
@@ -327,121 +328,136 @@ function Home() {
             <div className="bg-red-200 p-4 rounded shadow">Card 5</div>
             <div className="bg-indigo-200 p-4 rounded shadow">Card 6</div>
           </div>
-
-          <div className="table-container">
-            <table
-              className={`custom-table ${
-                selectedTicket ? "selected-table" : ""
-              }`}
-            >
-              <thead>
-                <tr>
-                  <th>Id</th>
-                  <th>T-Type</th>
-                  <th>Lead-Id</th>
-                  <th>Status</th>
-                  <th>Description</th>
-                  <th>Query</th>
-                  <th>Sub-Query</th>
-                  <th>Location</th>
-                  <th>updates</th>
-                  <th>From</th>
-                  <th>Depat</th>
-                  <th>Time</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {DTClosedickets.map((ticket) => (
-                  <tr
-                    key={ticket.TicketID}
-                    onClick={() => handleTicketClick(ticket)}
-                    className={`cursor-pointer ${
-                      selectedTicket === ticket ? "selected-row" : ""
-                    }`}
-                  >
-                    <td>{ticket.TicketID}</td>
-                    <td>{ticket.TicketType}</td>
-                    <td>{ticket.LeadId ? <>{ticket.LeadId}</> : <>NA</>}</td>
-                    <td className="text-green-600">{ticket.Status}</td>
-                    <td>{ticket.Description}</td>
-                    <td>{ticket.Querycategory}</td>
-                    <td>{ticket.QuerySubcategory}</td>
-                    <td>{ticket.Employee.Location}</td>
-                    <td>
-                      <p className="bg-red-400 text-center rounded-full">
-                        {ticket.TicketUpdates ? (
-                          <>{ticket.TicketUpdates.length}</>
-                        ) : (
-                          <>0</>
-                        )}
-                      </p>
-                    </td>
-                    <td>{ticket.Employee.EmployeeName}</td>
-                    <td>{ticket.Employee.Department.DepartmentName}</td>
-                    <td>{ticket.TicketResTimeInMinutes}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="table-container">
-          <table
-            className={`custom-table ${selectedTicket ? "selected-table" : ""}`}
-          >
-            <thead>
-              <tr>
-                <th>Id</th>
-                <th>T-Type</th>
-                <th>Lead-Id</th>
-                <th>Status</th>
-                <th>Description</th>
-                <th>Query</th>
-                <th>Sub-Query</th>
-                <th>Location</th>
-                <th>updates</th>
-                <th>From</th>
-                <th>Depat</th>
-                <th>Time</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {DTResolvedickets.map((ticket) => (
-                <tr
-                  key={ticket.TicketID}
-                  onClick={() => handleTicketClick(ticket)}
-                  className={`cursor-pointer ${
-                    selectedTicket === ticket ? "selected-row" : ""
+          {DTClosedickets.length > 0 ? (
+            <>
+              <div className="table-container">
+                <table
+                  className={`custom-table ${
+                    selectedTicket ? "selected-table" : ""
                   }`}
                 >
-                  <td>{ticket.TicketID}</td>
-                  <td>{ticket.TicketType}</td>
-                  <td>{ticket.LeadId ? <>{ticket.LeadId}</> : <>NA</>}</td>
-                  <td className="text-blue-800">{ticket.Status}</td>
-                  <td>{ticket.Description}</td>
-                  <td>{ticket.Querycategory}</td>
-                  <td>{ticket.QuerySubcategory}</td>
-                  <td>{ticket.Employee.Location}</td>
-                  <td>
-                    <p className="bg-red-400 text-center rounded-full">
-                      {ticket.TicketUpdates ? (
-                        <>{ticket.TicketUpdates.length}</>
-                      ) : (
-                        <>0</>
-                      )}
-                    </p>
-                  </td>
-                  <td>{ticket.Employee.EmployeeName}</td>
-                  <td>{ticket.Employee.Department.DepartmentName}</td>
-                  <td>{ticket.TicketResTimeInMinutes}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  <thead>
+                    <tr>
+                      <th>Id</th>
+                      <th>T-Type</th>
+                      <th>Lead-Id</th>
+                      <th>Status</th>
+                      {/* <th>Description</th> */}
+                      <th>Query</th>
+                      <th>Sub-Query</th>
+                      <th>Location</th>
+                      <th>updates</th>
+                      <th>From</th>
+                      <th>Depat</th>
+                      <th>Time</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {DTClosedickets.map((ticket) => (
+                      <tr
+                        key={ticket.TicketID}
+                        onClick={() => handleTicketClick(ticket)}
+                        className={`cursor-pointer ${
+                          selectedTicket === ticket ? "selected-row" : ""
+                        }`}
+                      >
+                        <td>{ticket.TicketID}</td>
+                        <td>{ticket.TicketType}</td>
+                        <td>
+                          {ticket.LeadId ? <>{ticket.LeadId}</> : <>NA</>}
+                        </td>
+                        <td className="text-green-600">{ticket.Status}</td>
+                        {/* <td>{ticket.Description}</td> */}
+                        <td>{ticket.Querycategory}</td>
+                        <td>{ticket.QuerySubcategory}</td>
+                        <td>{ticket.Employee.Location}</td>
+                        <td>
+                          <p className="bg-red-400 text-center rounded-full">
+                            {ticket.TicketUpdates ? (
+                              <>{ticket.TicketUpdates.length}</>
+                            ) : (
+                              <>0</>
+                            )}
+                          </p>
+                        </td>
+                        <td>{ticket.Employee.EmployeeName}</td>
+                        <td>{ticket.Employee.Department.DepartmentName}</td>
+                        <td>{ticket.TicketResTimeInMinutes}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : (
+            <></>
+          )}
         </div>
+
+        {DTResolvedickets.length > 0 ? (
+          <>
+            <div className="table-container">
+              <table
+                className={`custom-table ${
+                  selectedTicket ? "selected-table" : ""
+                }`}
+              >
+                <thead>
+                  <tr>
+                    <th>Id</th>
+                    <th>T-Type</th>
+                    <th>Lead-Id</th>
+                    <th>Status</th>
+                    {/* <th>Description</th> */}
+                    <th>Query</th>
+                    <th>Sub-Query</th>
+                    <th>Location</th>
+                    <th>updates</th>
+                    <th>From</th>
+                    <th>Depat</th>
+                    <th>Time</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {DTResolvedickets.map((ticket) => (
+                    <tr
+                      key={ticket.TicketID}
+                      onClick={() => handleTicketClick(ticket)}
+                      className={`cursor-pointer ${
+                        selectedTicket === ticket ? "selected-row" : ""
+                      }`}
+                    >
+                      <td>{ticket.TicketID}</td>
+                      <td>{ticket.TicketType}</td>
+                      <td>{ticket.LeadId ? <>{ticket.LeadId}</> : <>NA</>}</td>
+                      <td className="text-blue-800">{ticket.Status}</td>
+                      {/* <td>{ticket.Description}</td> */}
+                      <td>{ticket.Querycategory}</td>
+                      <td>{ticket.QuerySubcategory}</td>
+                      <td>{ticket.Employee.Location}</td>
+                      <td>
+                        <p className="bg-red-400 text-center rounded-full">
+                          {ticket.TicketUpdates ? (
+                            <>{ticket.TicketUpdates.length}</>
+                          ) : (
+                            <>0</>
+                          )}
+                        </p>
+                      </td>
+                      <td>{ticket.Employee.EmployeeName}</td>
+                      <td>{ticket.Employee.Department.DepartmentName}</td>
+                      <td>{ticket.TicketResTimeInMinutes}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        ) : (
+          <></>
+        )}
 
         <div>
           <h6 className="font-semibold mb-2">Tickets raised by me</h6>
@@ -454,49 +470,57 @@ function Home() {
         </div>
       </div>
       {/* Right Column */}
-      <div className="sm:w-1/4">
-        {selectedTicket && selectedTicket.Status === "Pending" && (
-          <div
-            ref={ticketUpdatesContainerRef}
-            className="m-2 p-2 bg-orange-400 border border-gray-300 overflow-y-auto max-h-72"
-          >
-            <div className="mt-4">
-              <div className="ticket-updates-container">
-                {ticketupdateData.map((update, index) => (
-                  <div
-                    key={index}
-                    className={`ticket-update ${
-                      update.EmployeeID ? "receiver" : "sender"
-                    }`}
-                  >
-                    <div className="update-info">
-                      <p>{update.UpdateStatus}</p>
-                      <p>{update.UpdateDescription}</p>
-                    </div>
-                    <div className="update-attachments">
-                      {update.UpdatedAttachmentUrls ? (
-                        <>
-                          {update.UpdatedAttachmentUrls.map((url, index) => (
-                            <img
-                              key={index}
-                              src={url}
-                              onClick={() => handleImageClick(url)}
-                              alt={`Attachment ${index + 1}`}
-                            />
-                          ))}
-                        </>
-                      ) : (
-                        <></>
-                      )}
-                    </div>
+      {selectedTicket ? (
+        <>
+          <div className="sm:w-full">
+            {selectedTicket && selectedTicket.Status === "Pending" && (
+              <div
+                ref={ticketUpdatesContainerRef}
+                className="m-2 p-2 bg-orange-400 border border-gray-300 overflow-y-auto max-h-72"
+              >
+                <div className="mt-4">
+                  <div className="ticket-updates-container">
+                    {ticketupdateData.map((update, index) => (
+                      <div
+                        key={index}
+                        className={`ticket-update ${
+                          update.EmployeeID ? "receiver" : "sender"
+                        }`}
+                      >
+                        <div className="update-info">
+                          <p>{update.UpdateStatus}</p>
+                          <p>{update.UpdateDescription}</p>
+                        </div>
+                        <div className="update-attachments">
+                          {update.UpdatedAttachmentUrls ? (
+                            <>
+                              {update.UpdatedAttachmentUrls.map(
+                                (url, index) => (
+                                  <img
+                                    key={index}
+                                    src={url}
+                                    onClick={() => handleImageClick(url)}
+                                    alt={`Attachment ${index + 1}`}
+                                  />
+                                )
+                              )}
+                            </>
+                          ) : (
+                            <></>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
               </div>
-            </div>
+            )}
+            <Reply ticketData={selectedTicket} />
           </div>
-        )}
-        <Reply ticketData={selectedTicket} />
-      </div>
+        </>
+      ) : (
+        <></>
+      )}
     </div>
   );
 }

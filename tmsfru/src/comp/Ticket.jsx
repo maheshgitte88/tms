@@ -167,7 +167,7 @@ function Ticket() {
     <>
       <div className="container mx-auto p-1 flex flex-col sm:flex-row text-sm">
         {/* Left Column */}
-        <div className="sm:w-4/3">
+        <div className="sm:w-full">
           {/* <div className="p-1 bg-red-400 font-bold text-center">
           <Link to={"Tickets"}>Me ||</Link> <Link to={"Tickets"}> Tickets</Link>
         </div> */}
@@ -207,7 +207,7 @@ function Ticket() {
                   <th>Id</th>
                   <th>Status</th>
                   <th>Lead-Id</th>
-                  <th>Description</th>
+                  {/* <th>Description</th> */}
                   <th>Querycategory</th>
                   <th>QuerySubcategory</th>
                   <th>To-Det</th>
@@ -227,7 +227,7 @@ function Ticket() {
                     <td>{ticket.TicketID}</td>
                     <td className="text-red-600">{ticket.Status}</td>
                     <td>{ticket.LeadId ? <>{ticket.LeadId}</> : <>NA</>}</td>
-                    <td>{ticket.Description}</td>
+                    {/* <td>{ticket.Description}</td> */}
                     <td>{ticket.Querycategory}</td>
                     <td>{ticket.QuerySubcategory}</td>
                     <td>{ticket.Department.DepartmentName}</td>
@@ -291,7 +291,7 @@ function Ticket() {
                   <th>Id</th>
                   <th>Status</th>
                   <th>Lead-Id</th>
-                  <th>Description</th>
+                  {/* <th>Description</th> */}
                   <th>Querycategory</th>
                   <th>QuerySubcategory</th>
                   <th>To-Det</th>
@@ -311,7 +311,7 @@ function Ticket() {
                     <td>{ticket.TicketID}</td>
                     <td className="text-red-600">{ticket.Status}</td>
                     <td>{ticket.LeadId ? <>{ticket.LeadId}</> : <>NA</>}</td>
-                    <td>{ticket.Description}</td>
+                    {/* <td>{ticket.Description}</td> */}
                     <td>{ticket.Querycategory}</td>
                     <td>{ticket.QuerySubcategory}</td>
                     <td>{ticket.Department.DepartmentName}</td>
@@ -345,7 +345,7 @@ function Ticket() {
                   <th>Id</th>
                   <th>Status</th>
                   <th>Lead-Id</th>
-                  <th>Description</th>
+                  {/* <th>Description</th> */}
                   <th>Querycategory</th>
                   <th>QuerySubcategory</th>
                   <th>To-Det</th>
@@ -365,7 +365,7 @@ function Ticket() {
                     <td>{ticket.TicketID}</td>
                     <td className="text-red-600">{ticket.Status}</td>
                     <td>{ticket.LeadId ? <>{ticket.LeadId}</> : <>NA</>}</td>
-                    <td>{ticket.Description}</td>
+                    {/* <td>{ticket.Description}</td> */}
                     <td>{ticket.Querycategory}</td>
                     <td>{ticket.QuerySubcategory}</td>
                     <td>{ticket.Department.DepartmentName}</td>
@@ -389,7 +389,8 @@ function Ticket() {
         </div>
 
         {/* Right Column */}
-        <div className="sm:w-1/3">
+        {selectedTicket ? <>
+          <div className="sm:w-full">
         {selectedTicket && selectedTicket.Status === "Pending" && (
           <div
             ref={ticketUpdatesContainerRef}
@@ -432,6 +433,8 @@ function Ticket() {
         )}
           <Reply ticketData={selectedTicket} />
         </div>
+        </>:<></>}
+        
       </div>
     </>
   );
